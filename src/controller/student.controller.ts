@@ -31,4 +31,66 @@ router.get(
   }
 );
 
+// get one student
+router.get(
+  "/student/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const student = await prisma.student.findUnique({
+        where: {
+          id: Number(id),
+        },
+      });
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      res.status(200).json(student);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// update student
+router.patch(
+  "/student/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const student = await prisma.student.update({
+        where: {
+          id: Number(id),
+        },
+        data: req.body,
+      });
+
+      res.status(202).json(student);
+    } catch (error) {
+      next(error);
+      return res.status(404).json({ message: "Student not found" });
+    }
+  }
+);
+
+// delete student
+router.delete(
+  "/student/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const student = await prisma.student.delete({
+        where: {
+          id: Number(id),
+        },
+      });
+
+      res.status(204).json(student);
+    } catch (error) {
+      next(error);
+      return res.status(404).json({ message: "Student not found" });
+    }
+  }
+);
+
 export default router;

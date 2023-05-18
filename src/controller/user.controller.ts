@@ -3,26 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const router = Router();
-
-type UserCreateInput = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  role: string;
-  createdAt?: Date; // optional because it has a default value
-  updatedAt?: Date; // optional because it has a default value
-};
-
-function validateUserCreateInput(data: any): data is Prisma.UserCreateInput {
-  return (
-    typeof data.first_name === "string" &&
-    typeof data.last_name === "string" &&
-    typeof data.email === "string" &&
-    typeof data.password === "string" &&
-    typeof data.role === "string"
-  );
-}
+const bcrypt = require("bcryptjs");
 
 // ROUTES
 // create new user
@@ -30,11 +11,19 @@ router.post(
   "/users/post",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!validateUserCreateInput(req.body)) {
-        return res.status(400).json({ error: "Invalid input" });
+      // CHECK IF USER EXISTS
+      const user = await prisma.user.findUnique({
+        where: { email: req.body.email },
+      });
+      if (user) {
+        return res.status(400).json({ message: "User already exists" });
       }
+      const password = req.body.password;
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-      const result = await prisma.user.create({ data: req.body });
+      const result = await prisma.user.create({
+        data: { ...req.body, password: hashedPassword },
+      });
       res.status(201).json(result);
     } catch (error) {
       next(error);
