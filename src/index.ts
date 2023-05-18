@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 
 // load environment variables
 dotenv.config();
+app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 
