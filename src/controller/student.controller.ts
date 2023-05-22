@@ -32,6 +32,10 @@ router.get(
         orderBy: {
           createdAt: "desc",
         },
+        // return student's class name
+        include: {
+          Class: true,
+        },
         skip: startIndex,
         take: limit,
       });
