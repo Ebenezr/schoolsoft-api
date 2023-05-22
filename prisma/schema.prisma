@@ -16,6 +16,8 @@ model Student {
   last_name            String
   dob                  DateTime
   gender               String
+  Class                Class                  @relation(fields: [classId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  classId              Int
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   Guardian             Guardian[]
@@ -39,7 +41,7 @@ model Guardian {
   first_name   String
   last_name    String
   phone        String
-  Student      Student  @relation(fields: [studentId], references: [id])
+  Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
   studentId    Int
   relationship String
   createdAt    DateTime @default(now())
@@ -60,11 +62,12 @@ model User {
 model Class {
   id        Int        @id @default(autoincrement())
   name      String
-  Teacher   Teacher    @relation(fields: [teacherId], references: [id])
+  Teacher   Teacher    @relation(fields: [teacherId], references: [id], onUpdate: Cascade)
   teacherId Int
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   ClassFee  ClassFee[]
+  Student   Student[]
 }
 
 model ClassFee {
@@ -73,7 +76,7 @@ model ClassFee {
   term_one       Decimal
   term_two       Decimal
   term_three     Decimal
-  Class          Class            @relation(fields: [classId], references: [id])
+  Class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   classId        Int
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -96,9 +99,9 @@ model AdditionalFee {
 
 model AdditionalFeeStudent {
   id              Int           @id @default(autoincrement())
-  Student         Student       @relation(fields: [studentId], references: [id])
+  Student         Student       @relation(fields: [studentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   studentId       Int
-  AdditionalFee   AdditionalFee @relation(fields: [additionalFeeId], references: [id])
+  AdditionalFee   AdditionalFee @relation(fields: [additionalFeeId], references: [id], onUpdate: Cascade)
   additionalFeeId Int
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -106,11 +109,11 @@ model AdditionalFeeStudent {
 
 model FeePayment {
   id           Int      @id @default(autoincrement())
-  Student      Student  @relation(fields: [studentId], references: [id])
+  Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
   studentId    Int
   payment_mode String
   reference    String
-  ClassFee     ClassFee @relation(fields: [classFeeId], references: [id])
+  ClassFee     ClassFee @relation(fields: [classFeeId], references: [id], onUpdate: Cascade)
   classFeeId   Int
   amount       Decimal
   createdAt    DateTime @default(now())
@@ -120,11 +123,11 @@ model FeePayment {
 // table for storing student term fee plus additionalfee sum
 model StudentTermFee {
   id              Int           @id @default(autoincrement())
-  Student         Student       @relation(fields: [studentId], references: [id])
+  Student         Student       @relation(fields: [studentId], references: [id], onUpdate: Cascade)
   studentId       Int
-  ClassFee        ClassFee      @relation(fields: [classFeeId], references: [id])
+  ClassFee        ClassFee      @relation(fields: [classFeeId], references: [id], onUpdate: Cascade)
   classFeeId      Int
-  AdditionalFee   AdditionalFee @relation(fields: [additionalFeeId], references: [id])
+  AdditionalFee   AdditionalFee @relation(fields: [additionalFeeId], references: [id], onUpdate: Cascade)
   additionalFeeId Int
   amount          Decimal
   createdAt       DateTime      @default(now())
