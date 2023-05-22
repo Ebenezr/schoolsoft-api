@@ -10,8 +10,7 @@ import additionalFeeRouter from "../controller/additionalFee.controller";
 import additionalFeeStudentRouter from "../controller/additionalFeeStudent.controller";
 import feePaymentRouter from "../controller/feePayment.controller";
 import studentTermFeeRouter from "../controller/studentTermFee.controller";
-
-
+import authRouter from "../controller/auth.controller";
 
 const router = Router();
 
@@ -25,10 +24,7 @@ router.use("/api", additionalFeeRouter);
 router.use("/api", additionalFeeStudentRouter);
 router.use("/api", feePaymentRouter);
 router.use("/api", studentTermFeeRouter);
-
-
-
-
+router.use("/api", authRouter);
 
 // localhost:3000/api/students
 
