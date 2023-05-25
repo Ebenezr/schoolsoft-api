@@ -20,10 +20,31 @@ model Student {
   classId              Int
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  Guardian             Guardian[]
   AdditionalFeeStudent AdditionalFeeStudent[]
   FeePayment           FeePayment[]
   StudentTermFee       StudentTermFee[]
+  StudentGuardian      StudentGuardian[]
+}
+
+model Guardian {
+  id              Int               @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  phone           String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  StudentGuardian StudentGuardian[]
+}
+
+model StudentGuardian {
+  id           Int      @id @default(autoincrement())
+  Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
+  studentId    Int
+  Guardian     Guardian @relation(fields: [guardianId], references: [id], onUpdate: Cascade)
+  guardianId   Int
+  relationship String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Teacher {
@@ -34,18 +55,6 @@ model Teacher {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   Class      Class[]
-}
-
-model Guardian {
-  id           Int      @id @default(autoincrement())
-  first_name   String
-  last_name    String
-  phone        String
-  Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
-  studentId    Int
-  relationship String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 }
 
 model User {

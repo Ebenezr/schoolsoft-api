@@ -50,7 +50,6 @@ router.get(
     } catch (error) {
       next(error);
     }
-
   }
 );
 
@@ -93,6 +92,74 @@ router.delete(
     } catch (error) {
       next(error);
       return res.status(404).json({ message: "Guardian not found" });
+    }
+  }
+);
+
+// search students by name
+router.get(
+  "/guardians/search/:name",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { name } = req.params;
+    try {
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+
+      const students = await prisma.guardian.findMany({
+        where: {
+          OR: [
+            {
+              first_name: {
+                contains: name?.toString().toLowerCase() || "",
+                mode: "insensitive",
+              },
+            },
+            {
+              last_name: {
+                contains: name?.toString().toLowerCase() || "",
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+        skip: startIndex,
+        take: limit,
+      });
+
+      if (!students) {
+        return res.status(404).json({ error: "Guardian not found" });
+      }
+
+      const totalItems = await prisma.guardian.count({
+        where: {
+          OR: [
+            {
+              first_name: {
+                contains: name?.toString().toLowerCase() || "",
+                mode: "insensitive",
+              },
+            },
+            {
+              last_name: {
+                contains: name?.toString().toLowerCase() || "",
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+      });
+
+      res.status(200).json({
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+        itemsPerPage: limit,
+        totalItems: totalItems,
+        items: students.slice(0, endIndex),
+      });
+    } catch (error: any) {
+      next(error);
     }
   }
 );

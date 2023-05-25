@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import router from "./routes";
-
+import cookieParser from "cookie-parser";
 const cors = require("cors");
 const morgan = require("morgan");
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
-
+const rateLimit = require("express-rate-limit");
 // load environment variables
 dotenv.config();
 // setup express
@@ -20,6 +20,13 @@ app.get("/", (req: Request, res: Response) => {
 
 // for logging
 app.use(morgan("dev"));
+// for rate limiting
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 60,
+});
+app.use(limiter);
+
 // setup cors
 app.use(cors());
 // setup routes
