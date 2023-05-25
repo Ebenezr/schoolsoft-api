@@ -6,12 +6,44 @@ const router = Router();
 
 // post new guardian
 router.post(
-  "/guardian/post",
+  "/guardians/post",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
       const guardian = await prisma.guardian.create({ data });
       res.status(201).json(guardian);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
+  "/guardians",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+
+      const students = await prisma.guardian.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: startIndex,
+        take: limit,
+      });
+
+      const totalItems = await prisma.guardian.count();
+
+      res.status(200).json({
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+        itemsPerPage: limit,
+        totalItems: totalItems,
+        items: students.slice(0, endIndex),
+      });
     } catch (error) {
       next(error);
     }

@@ -7,7 +7,7 @@ const router = Router();
 // post new teacher
 
 router.post(
-  "/teacher/post",
+  "/teachers/post",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
@@ -22,11 +22,47 @@ router.post(
 //  get all teachers
 
 router.get(
+  "/teachers/all",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const teacher = await prisma.teacher.findMany();
+      res.status(200).json({ teacher });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
   "/teachers",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const teachers = await prisma.teacher.findMany();
-      res.status(200).json(teachers);
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+
+      const students = await prisma.teacher.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        // return student's class name
+        include: {
+          Class: true,
+        },
+        skip: startIndex,
+        take: limit,
+      });
+
+      const totalItems = await prisma.teacher.count();
+
+      res.status(200).json({
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+        itemsPerPage: limit,
+        totalItems: totalItems,
+        items: students.slice(0, endIndex),
+      });
     } catch (error) {
       next(error);
     }
