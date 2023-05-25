@@ -84,15 +84,24 @@ model Class {
 model ClassFee {
   id             Int              @id @default(autoincrement())
   name           String
-  term_one       Decimal
-  term_two       Decimal
-  term_three     Decimal
   Class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   classId        Int
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  TermFee        TermFee[]
   FeePayment     FeePayment[]
   StudentTermFee StudentTermFee[]
+}
+
+model TermFee {
+  id         Int      @id @default(autoincrement())
+  Term       Term     @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  termId     Int
+  ClassFee   ClassFee @relation(fields: [classFeeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  classFeeId Int
+  amount     Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 // food
@@ -118,6 +127,17 @@ model AdditionalFeeStudent {
   updatedAt       DateTime      @updatedAt
 }
 
+model Term {
+  id         Int          @id @default(autoincrement())
+  name       String
+  startDate  DateTime
+  endDate    DateTime
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  FeePayment FeePayment[]
+  TermFee    TermFee[]
+}
+
 model FeePayment {
   id           Int      @id @default(autoincrement())
   Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
@@ -127,6 +147,8 @@ model FeePayment {
   ClassFee     ClassFee @relation(fields: [classFeeId], references: [id], onUpdate: Cascade)
   classFeeId   Int
   amount       Decimal
+  Term         Term     @relation(fields: [termId], references: [id], onUpdate: Cascade)
+  termId       Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
