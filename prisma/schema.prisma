@@ -156,3 +156,18 @@ model StudentTermFee {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
+
+// table with informtion about the school
+model School {
+  id              Int            @id @default (autoincrement())
+  name            String         @name @default (autoincrement())
+  email           String
+  phone           Int
+  address         Int
+  address2        Int
+  town            String
+  school_motto    String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
