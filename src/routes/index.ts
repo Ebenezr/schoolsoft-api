@@ -12,6 +12,7 @@ import studentTermFeeRouter from "../controller/studentTermFee.controller";
 import authRouter from "../controller/auth.controller";
 import reportRouter from "../controller/reports.controller";
 import termRouter from "../controller/term.controller";
+import schoolRouter from "../controller/school.controller";
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use("/api", studentTermFeeRouter);
 router.use("/api", authRouter);
 router.use("/api", reportRouter);
 router.use("/api", termRouter);
+router.use("/api", schoolRouter);
 
 export default router;
