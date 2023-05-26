@@ -162,9 +162,10 @@ model School {
   id              Int            @id @default (autoincrement())
   name            String         
   email           String
-  phone           Int
-  address         Int
-  address2        Int
+  phone           String
+  phone2          String
+  address         String
+  address2        String
   town            String
   school_motto    String
   createdAt       DateTime      @default(now())
