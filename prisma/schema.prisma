@@ -160,7 +160,7 @@ model StudentTermFee {
 // table with informtion about the school
 model School {
   id              Int            @id @default (autoincrement())
-  name            String         @name @default (autoincrement())
+  name            String         
   email           String
   phone           Int
   address         Int
