@@ -60,8 +60,8 @@ router.get(
   "/students/all",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const students = await prisma.student.findMany();
-      res.status(200).json(students);
+      const student = await prisma.student.findMany();
+      res.status(200).json({ student });
     } catch (error) {
       next(error);
     }
