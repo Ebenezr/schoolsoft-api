@@ -66,6 +66,7 @@ model User {
   activeStatus         Boolean   @default(true)
   passwordResetToken   String?   @unique
   passwordResetExpires DateTime?
+  superuser            Boolean   @default(false)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 }
@@ -77,21 +78,22 @@ model Class {
   teacherId      Int
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  term_1         Decimal?         @default(0)
+  term_2         Decimal?         @default(0)
+  term_3         Decimal?         @default(0)
   Student        Student[]
-  TermFee        TermFee[]
   FeePayment     FeePayment[]
   StudentTermFee StudentTermFee[]
 }
 
-model TermFee {
-  id        Int      @id @default(autoincrement())
-  Term      Term     @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  termId    Int
-  Class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  classId   Int
-  amount    Decimal
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Term {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  startDate  DateTime
+  endDate    DateTime
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  FeePayment FeePayment[]
 }
 
 // food
@@ -115,17 +117,6 @@ model AdditionalFeeStudent {
   additionalFeeId Int
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-}
-
-model Term {
-  id         Int          @id @default(autoincrement())
-  name       String
-  startDate  DateTime
-  endDate    DateTime
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  FeePayment FeePayment[]
-  TermFee    TermFee[]
 }
 
 model FeePayment {
@@ -159,15 +150,14 @@ model StudentTermFee {
 
 // table with informtion about the school
 model School {
-  id              Int            @id @default (autoincrement())
-  name            String         
-  email           String
-  phone           Int
-  address         Int
-  address2        Int
-  town            String
-  school_motto    String
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String
+  address      String
+  address2     String
+  town         String
+  school_motto String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
-
