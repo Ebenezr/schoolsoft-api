@@ -119,6 +119,23 @@ model AdditionalFeeStudent {
   updatedAt       DateTime      @updatedAt
 }
 
+// table for storing student term fee plus additionalfee sum
+model StudentTermFee {
+  id                     Int           @id @default(autoincrement())
+  Student                Student       @relation(fields: [studentId], references: [id], onUpdate: Cascade)
+  studentId              Int
+  Class                  Class         @relation(fields: [classId], references: [id], onUpdate: Cascade)
+  classId                Int
+  AdditionalFeeStudent   AdditionalFee @relation(fields: [additionalFeeStudentId], references: [id], onUpdate: Cascade)
+  additionalFeeStudentId Int
+  total_fee              Decimal       @default(0)
+  amount_paid            Decimal       @default(0)
+  balance                Decimal       @default(0)
+  status                 String        @default("pending")
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+}
+
 model FeePayment {
   id           Int      @id @default(autoincrement())
   Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
@@ -132,20 +149,6 @@ model FeePayment {
   termId       Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-}
-
-// table for storing student term fee plus additionalfee sum
-model StudentTermFee {
-  id              Int           @id @default(autoincrement())
-  Student         Student       @relation(fields: [studentId], references: [id], onUpdate: Cascade)
-  studentId       Int
-  Class           Class         @relation(fields: [classId], references: [id], onUpdate: Cascade)
-  classId         Int
-  AdditionalFee   AdditionalFee @relation(fields: [additionalFeeId], references: [id], onUpdate: Cascade)
-  additionalFeeId Int
-  amount          Decimal
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
 }
 
 // table with informtion about the school
