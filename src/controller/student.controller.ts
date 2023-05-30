@@ -15,6 +15,7 @@ router.post(
         data,
       });
       // Return the created student and their associated StudentTermFee record
+
       res.status(201).json({ student });
     } catch (error) {
       next(error);
