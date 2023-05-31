@@ -10,15 +10,9 @@ router.post(
   "/terms/post",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, startDate, endDate } = req.body;
-      const newTerm = await prisma.term.create({
-        data: {
-          name,
-          startDate,
-          endDate,
-        },
-      });
-      res.status(201).json(newTerm);
+      const data = req.body;
+      const newterm = await prisma.term.create({ data });
+      res.status(201).json(newterm);
     } catch (error) {
       next(error);
     }

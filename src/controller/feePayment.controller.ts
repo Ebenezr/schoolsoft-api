@@ -6,101 +6,209 @@ const router = Router();
 
 // post new fee payment
 
+// router.post(
+//   "/feepayments/post",
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const data = req.body;
+//       const feePayment = await prisma.feePayment.create({ data });
+//       res.status(201).json(feePayment);
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
+
+// post new fee payment
 router.post(
-    "/feePayment/post",
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const data = req.body;
-            const feePayment = await prisma.feePayment.create({ data });
-            res.status(201).json(feePayment);
-        } catch (error) {
-            next(error);
+  "/fee-payments/post",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = req.body;
+      const feePayment = await prisma.feePayment.create({ data });
 
+      const studentTermFee = await prisma.studentTermFee.findFirst({
+        where: {
+          studentId: feePayment.studentId,
+          classId: feePayment.classId,
+        },
+      });
 
-        }
+      if (studentTermFee) {
+        const updatedStudentTermFee = await prisma.studentTermFee.update({
+          where: { id: studentTermFee.id },
+          data: {
+            amount_paid: {
+              increment: feePayment.amount,
+            },
+            balance: {
+              decrement: feePayment.amount,
+            },
+          },
+        });
+
+        res.status(201).json({ feePayment, updatedStudentTermFee });
+      } else {
+        res
+          .status(400)
+          .json({ message: "No term fee found for this student and class." });
+      }
+    } catch (error) {
+      next(error);
     }
+  }
 );
 
 // get all fee payments
 router.get(
-    "/feePayment/all",
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const feePayment = await prisma.feePayment.findMany();
-            res.status(200).json(feePayment);
-        } catch (error) {
-            next(error);
-        }
+  "/feepayments/all",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const feePayment = await prisma.feePayment.findMany();
+      res.status(200).json(feePayment);
+    } catch (error) {
+      next(error);
     }
+  }
+);
+
+router.get(
+  "/feepayments",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+
+      const students = await prisma.feePayment.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+
+        skip: startIndex,
+        take: limit,
+      });
+
+      const totalItems = await prisma.feePayment.count();
+
+      res.status(200).json({
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+        itemsPerPage: limit,
+        totalItems: totalItems,
+        items: students.slice(0, endIndex),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 );
 
 // get one fee payment
 router.get(
-    "/feePayment/:id",
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const { id } = req.params;
+  "/feepayment/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
 
-            const feePayment = await prisma.feePayment.findUnique({
-                where: {
-                    id: Number(id),
-                },
-            });
-            if (!feePayment) {
-                return res.status(404).json({ message: "Fee payment not found" });
-            }
-            res.status(200).json(feePayment);
-        } catch (error) {
-            next(error);
-
-        }
+      const feePayment = await prisma.feePayment.findUnique({
+        where: {
+          id: Number(id),
+        },
+      });
+      if (!feePayment) {
+        return res.status(404).json({ message: "Fee payment not found" });
+      }
+      res.status(200).json(feePayment);
+    } catch (error) {
+      next(error);
     }
+  }
 );
 
-//   update fee payment
+// update fee payment
 router.patch(
-    "/feePayment/:id",
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const { id } = req.params;
-            const data = req.body;
-            const feePayment = await prisma.feePayment.update({
-                where: {
-                    id: Number(id),
+  "/fee-payment/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const newAmount = parseFloat(req.body.amount); // Parse `Decimal` to float
 
-                },
-                data,
-            });
-            res.status(200).json(feePayment);
-        } catch (error) {
-            next(error);
+      if (isNaN(newAmount)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid amount in request body" });
+      }
 
-        }
+      const oldFeePayment = await prisma.feePayment.findUnique({
+        where: {
+          id: Number(id),
+        },
+      });
+
+      if (!oldFeePayment) {
+        return res.status(404).json({ message: "Fee payment not found" });
+      }
+
+      const oldAmount = oldFeePayment.amount.toNumber() || 0;
+
+      const amountDifference = newAmount - oldAmount;
+
+      const updatedFeePayment = await prisma.feePayment.update({
+        where: {
+          id: Number(id),
+        },
+        data: req.body,
+      });
+
+      // Fetch the StudentTermFee for the student and class
+      const studentTermFee = await prisma.studentTermFee.findFirst({
+        where: {
+          studentId: oldFeePayment.studentId,
+          classId: oldFeePayment.classId,
+        },
+      });
+
+      if (studentTermFee) {
+        // Update StudentTermFee
+        await prisma.studentTermFee.update({
+          where: { id: studentTermFee.id },
+          data: {
+            amount_paid: {
+              increment: amountDifference,
+            },
+            balance: {
+              decrement: amountDifference,
+            },
+          },
+        });
+      }
+
+      res.status(200).json(updatedFeePayment);
+    } catch (error) {
+      next(error);
     }
+  }
 );
 
 // delete fee payment
 
 router.delete(
-    "/feePayment/:id",
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const { id } = req.params;
-            await prisma.feePayment.delete({
-                where: {
-                    id: Number(id),
-                },
-            });
-            res.status(200).json({ message: "Fee payment deleted successfully" });
-        } catch (error) {
-            next(error);
-
-        }
+  "/feepayment/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      await prisma.feePayment.delete({
+        where: {
+          id: Number(id),
+        },
+      });
+      res.status(200).json({ message: "Fee payment deleted successfully" });
+    } catch (error) {
+      next(error);
     }
+  }
 );
-
-
-
-
 
 export default router;

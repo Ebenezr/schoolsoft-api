@@ -5,13 +5,18 @@ const prisma = new PrismaClient();
 const router = Router();
 
 // post new student
+// post new student
 router.post(
   "/students/post",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
-      const student = await prisma.student.create({ data });
-      res.status(201).json(student);
+      const student = await prisma.student.create({
+        data,
+      });
+      // Return the created student and their associated StudentTermFee record
+
+      res.status(201).json({ student });
     } catch (error) {
       next(error);
     }
@@ -60,8 +65,15 @@ router.get(
   "/students/all",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const students = await prisma.student.findMany();
-      res.status(200).json(students);
+      const student = await prisma.student.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          Class: true,
+        },
+      });
+      res.status(200).json({ student });
     } catch (error) {
       next(error);
     }
