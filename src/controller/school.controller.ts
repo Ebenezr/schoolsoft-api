@@ -6,18 +6,18 @@ const router = Router();
 
 
 // post school info
-router.post(
-    "/school/post",
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const data = req.body;
-            const school = await prisma.school.create({ data });
-            res.status(201).json(school);
-        } catch (error) {
-          next(error);
-        }
-    }
-);
+// router.post(
+//     "/school/post",
+//     async (req: Request, res: Response, next: NextFunction) => {
+//         try {
+//             const data = req.body;
+//             const school = await prisma.school.create({ data });
+//             res.status(201).json(school);
+//         } catch (error) {
+//           next(error);
+//         }
+//     }
+// );
 
 
 // update school info
@@ -64,27 +64,38 @@ router.get(
     }
 );
 
-// delete school info
-router.delete(
-    "/school/delete/:id",
-
+// get all school info
+router.get(
+    "/school",
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { id } = req.params;
-            const school = await prisma.school.delete({
-                where: {
-                    id: Number(id),
-                },
-            });
+            const school = await prisma.school.findMany();
             res.status(200).json(school);
         } catch (error) {
             next(error);
-            return res.status(404).json({ message: "School not found" });
         }
     }
 );
 
 
 
+// delete school info
+// router.delete(
+//     "/school/delete/:id",
 
+//     async (req: Request, res: Response, next: NextFunction) => {
+//         try {
+//             const { id } = req.params;
+//             const school = await prisma.school.delete({
+//                 where: {
+//                     id: Number(id),
+//                 },
+//             });
+//             res.status(200).json(school);
+//         } catch (error) {
+//             next(error);
+//             return res.status(404).json({ message: "School not found" });
+//         }
+//     }
+// );
 export default router;
