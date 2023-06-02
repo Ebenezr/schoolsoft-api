@@ -153,6 +153,19 @@ model FeePayment {
 
 // table with informtion about the school
 model School {
+<<<<<<< HEAD
+  id              Int            @id @default (autoincrement())
+  name            String         
+  email           String
+  phone           String
+  phone2          String
+  address         String
+  address2        String
+  town            String
+  school_motto    String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+=======
   id           Int      @id @default(autoincrement())
   name         String
   email        String   @unique
@@ -163,4 +176,5 @@ model School {
   school_motto String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+>>>>>>> 85a051b56f419c0ca554370cc7265eebb61b40f1
 }
