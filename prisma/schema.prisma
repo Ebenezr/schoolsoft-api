@@ -121,19 +121,25 @@ model AdditionalFeeStudent {
 
 // table for storing student term fee plus additionalfee sum
 model StudentTermFee {
-  id                     Int           @id @default(autoincrement())
-  Student                Student       @relation(fields: [studentId], references: [id], onUpdate: Cascade)
-  studentId              Int
-  Class                  Class         @relation(fields: [classId], references: [id], onUpdate: Cascade)
-  classId                Int
-  AdditionalFeeStudent   AdditionalFee @relation(fields: [additionalFeeStudentId], references: [id], onUpdate: Cascade)
-  additionalFeeStudentId Int
-  total_fee              Decimal       @default(0)
-  amount_paid            Decimal       @default(0)
-  balance                Decimal       @default(0)
-  status                 String        @default("pending")
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
+  id              Int            @id @default(autoincrement())
+  Student         Student        @relation(fields: [studentId], references: [id], onUpdate: Cascade)
+  studentId       Int
+  Class           Class          @relation(fields: [classId], references: [id], onUpdate: Cascade)
+  classId         Int
+  tuition_fee     Decimal        @default(0)
+  bus_fee         Decimal        @default(0)
+  food_fee        Decimal        @default(0)
+  boarding_fee    Decimal        @default(0)
+  total_fee       Decimal        @default(0)
+  amount_paid     Decimal        @default(0)
+  balance         Decimal        @default(0)
+  status          String         @default("pending")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  AdditionalFee   AdditionalFee? @relation(fields: [additionalFeeId], references: [id])
+  additionalFeeId Int?
+
+  @@unique([studentId, classId])
 }
 
 model FeePayment {
@@ -153,28 +159,15 @@ model FeePayment {
 
 // table with informtion about the school
 model School {
-<<<<<<< HEAD
-  id              Int            @id @default (autoincrement())
-  name            String         
-  email           String
-  phone           String
-  phone2          String
-  address         String
-  address2        String
-  town            String
-  school_motto    String
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-=======
   id           Int      @id @default(autoincrement())
   name         String
   email        String   @unique
   phone        String
+  phone2       String?
   address      String
-  address2     String
+  address2     String?
   town         String
   school_motto String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
->>>>>>> 85a051b56f419c0ca554370cc7265eebb61b40f1
 }

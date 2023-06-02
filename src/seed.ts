@@ -40,6 +40,7 @@ export async function seed(prisma: PrismaClient) {
         email: companyEmail,
         address: "Nakuuru, Kenya",
         phone: "+254706731810",
+        phone2: "+254706731810",
         town: "Nakuru",
         address2: "Area Code",
         school_motto: "High Archivers",
