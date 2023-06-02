@@ -40,12 +40,12 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const studentCount = await prisma.student.count({
+      const totalStudents = await prisma.student.count({
         where: {
           classId: Number(id),
         },
       });
-      res.status(200).json({ studentCount });
+      res.status(200).json({ totalStudents });
     } catch (error) {
       next(error);
     }
@@ -72,6 +72,19 @@ router.get(
     try {
       const totalTeachers = await prisma.teacher.count();
       res.status(200).json({ totalTeachers });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// number of guardians
+router.get(
+  "/guardians/count",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const totalGuardians = await prisma.guardian.count();
+      res.status(200).json({ totalGuardians });
     } catch (error) {
       next(error);
     }
