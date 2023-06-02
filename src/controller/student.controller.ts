@@ -125,7 +125,7 @@ router.post(
 
 // PATCH existing student
 router.patch(
-  "/students/:id",
+  "/student/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
