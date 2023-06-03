@@ -49,11 +49,11 @@ router.post(
       }
       // Get the fee for the corresponding term
       let termFee = 0;
-      if (term.name === "term_1") {
+      if (term.name === "Term 1") {
         termFee = Number(classInfo.term_1) || 0;
-      } else if (term.name === "term_2") {
+      } else if (term.name === "Term 2") {
         termFee = Number(classInfo.term_2) || 0;
-      } else if (term.name === "term_3") {
+      } else if (term.name === "Term 3") {
         termFee = Number(classInfo.term_3) || 0;
       }
       // Find additional fees from the database based on regex patterns
@@ -170,11 +170,11 @@ router.patch(
 
       // Get the fee for the corresponding term
       let termFee = 0;
-      if (term.name === "term_1") {
+      if (term.name === "Term 1") {
         termFee = Number(classInfo.term_1) || 0;
-      } else if (term.name === "term_2") {
+      } else if (term.name === "Term 2") {
         termFee = Number(classInfo.term_2) || 0;
-      } else if (term.name === "term_3") {
+      } else if (term.name === "Term 3") {
         termFee = Number(classInfo.term_3) || 0;
       }
 
