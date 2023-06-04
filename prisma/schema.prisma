@@ -121,11 +121,12 @@ model AdditionalFeeStudent {
 
 // table for storing student term fee plus additionalfee sum
 model StudentTermFee {
-  id              Int            @id @default(autoincrement())
-  Student         Student        @relation(fields: [studentId], references: [id], onUpdate: Cascade)
-  studentId       Int
-  Class           Class          @relation(fields: [classId], references: [id], onUpdate: Cascade)
-  classId         Int
+  id        Int     @id @default(autoincrement())
+  Student   Student @relation(fields: [studentId], references: [id], onUpdate: Cascade)
+  studentId Int
+  Class     Class   @relation(fields: [classId], references: [id], onUpdate: Cascade)
+  classId   Int
+
   tuition_fee     Decimal        @default(0)
   bus_fee         Decimal        @default(0)
   food_fee        Decimal        @default(0)

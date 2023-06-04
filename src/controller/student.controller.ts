@@ -286,6 +286,7 @@ router.get(
         include: {
           Class: true,
           StudentTermFee: true,
+          AdditionalFeeStudent: true,
         },
         skip: startIndex,
         take: limit,
