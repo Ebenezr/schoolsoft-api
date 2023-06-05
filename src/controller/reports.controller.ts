@@ -108,11 +108,13 @@ router.get(
 );
 
 // todays sales
+//
 router.get(
   "/payments/get//filter/paymentmodes",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const today = new Date();
+      // CHANGE THIS
       const startOfDay = new Date(
         today.getFullYear(),
         today.getMonth(),
