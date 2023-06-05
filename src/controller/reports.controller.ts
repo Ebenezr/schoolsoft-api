@@ -107,4 +107,61 @@ router.get(
   }
 );
 
+// todays sales
+router.get(
+  "/payments/get//filter/paymentmodes",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const today = new Date();
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      );
+
+      const paymentModes = [
+        "BANK",
+        "MPESA",
+        "CHEQUE",
+        "CREDIT",
+        "CASH",
+        "CARD",
+      ];
+
+      const revenueByPaymentMode = await Promise.all(
+        paymentModes.map(async (mode) => {
+          const revenue = await prisma.feePayment.aggregate({
+            where: {
+              payment_mode: mode,
+              createdAt: {
+                gte: startOfDay,
+                lt: endOfDay,
+              },
+            },
+            _sum: {
+              amount: true,
+            },
+          });
+
+          return {
+            name: mode,
+            value: Number(revenue._sum?.amount) ?? 0,
+          };
+        })
+      );
+
+      res.json({
+        todayRevenueByPaymentMode: revenueByPaymentMode,
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  }
+);
+
 export default router;
