@@ -110,7 +110,7 @@ router.get(
 // todays sales
 //
 router.get(
-  "/payments/get//filter/paymentmodes",
+  "/payments/get/paymentmodes",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const today = new Date();
