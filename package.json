@@ -1,5 +1,5 @@
 {
-  "name": "Schoolsoft",
+  "name": "schoolsoft",
   "version": "1.0.0",
   "description": "school management system",
   "main": "index.js",
@@ -11,9 +11,9 @@
     "prisma": "prisma",
     "generate": "prisma generate",
     "build": "tsc",
-    "prisma:migrate": "npx prisma migrate dev --name init",
+    "prisma:migrate": "yarn prisma migrate dev --name init",
     "prestart": "yarn prisma:migrate && yarn generate && yarn seed && yarn build",
-    "start": "yarn seed && node dist/index.js",
+    "start": "node dist/index.js",
     "seed": "ts-node src/seed.ts",
     "test": "jest"
   },

@@ -46,8 +46,11 @@ router.post(
       if (!term) {
         throw new Error("No active term found");
       }
+      // Assign the term ID to a variable
+      const termId = term.id;
       // Get the fee for the corresponding term
       let termFee = 0;
+
       if (term.name === "Term 1") {
         termFee = Number(classInfo.term_1) || 0;
       } else if (term.name === "Term 2") {
@@ -108,6 +111,8 @@ router.post(
           studentId: student.id,
           classId: data.classId,
           tuition_fee: termFee,
+          termId,
+
           bus_fee: additionalPayments.bus_fee ? busFee : 0,
           food_fee: additionalPayments.food_fee ? foodFee : 0,
           boarding_fee: additionalPayments.boarding_fee ? boardingFee : 0,
@@ -166,9 +171,12 @@ router.patch(
       if (!term) {
         throw new Error("No active term found");
       }
+      // Assign the term ID to a variable
+      const termId = term.id;
+
+      let termFee = 0;
 
       // Get the fee for the corresponding term
-      let termFee = 0;
       if (term.name === "Term 1") {
         termFee = Number(classInfo.term_1) || 0;
       } else if (term.name === "Term 2") {
@@ -244,6 +252,8 @@ router.patch(
           studentId: student.id,
           classId: data.classId,
           tuition_fee: termFee,
+          termId,
+
           bus_fee: additionalPayments.bus_fee ? busFee : 0,
           food_fee: additionalPayments.food_fee ? foodFee : 0,
           boarding_fee: additionalPayments.boarding_fee ? boardingFee : 0,
