@@ -34,6 +34,62 @@ router.get(
   }
 );
 
+// Endpoint for getting additional fees of a specific student
+router.get(
+  "/student/:studentId/additional-fees",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const studentId = parseInt(req.params.studentId);
+
+    if (isNaN(studentId)) {
+      res.status(400).json({ error: "Invalid student id" });
+      return;
+    }
+
+    try {
+      const additionalFees = await prisma.additionalFeeStudent.findMany({
+        where: {
+          studentId: studentId,
+        },
+        include: {
+          AdditionalFee: true,
+        },
+      });
+
+      if (additionalFees.length === 0) {
+        res
+          .status(404)
+          .json({
+            message: "No additional fees found for the given student id",
+          });
+        return;
+      }
+
+      const feesObject: { [key: string]: boolean } = {};
+
+      const feeData = [
+        { id: 1, name: "Food Fee" },
+        { id: 2, name: "Bus Fee" },
+        { id: 3, name: "Boarding Fee" },
+      ];
+
+      feeData.forEach((fee) => {
+        const feeKey = fee.name.toLowerCase().replace(" ", "_");
+        feesObject[feeKey] = false;
+      });
+
+      additionalFees.forEach((additionalFee) => {
+        const feeName = additionalFee.AdditionalFee.name;
+        const feeKey = feeName.toLowerCase().replace(" ", "_");
+        feesObject[feeKey] = true;
+      });
+
+      res.status(200).json(feesObject);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 // get one additional fee
 
 router.get(

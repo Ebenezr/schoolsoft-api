@@ -52,6 +52,7 @@ router.get(
         // return teachers class name fullname `firstname + last_name
         include: {
           Teacher: true,
+          Student: true,
         },
         skip: startIndex,
         take: limit,
@@ -72,6 +73,63 @@ router.get(
   }
 );
 
+// Endpoint for getting students of a specific class
+router.get(
+  "/class/:classId/students",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const classId = parseInt(req.params.classId);
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    if (isNaN(classId)) {
+      res.status(400).json({ error: "Invalid class id" });
+      return;
+    }
+
+    try {
+      const students = await prisma.student.findMany({
+        where: {
+          classId: classId,
+        },
+        include: {
+          Class: true,
+          StudentTermFee: true,
+          AdditionalFeeStudent: true,
+        },
+        skip: startIndex,
+        take: limit,
+      });
+
+      const totalStudents = await prisma.student.count({
+        where: {
+          classId: classId,
+        },
+      });
+
+      if (students.length === 0) {
+        res
+          .status(404)
+          .json({ message: "No students found for the given class id" });
+        return;
+      }
+
+      const result = {
+        totalItems: totalStudents,
+        totalPages: Math.ceil(totalStudents / limit),
+        currentPage: page,
+        itemsPerPage: limit,
+        items: students,
+      };
+
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 // get one class
 
 router.get(
