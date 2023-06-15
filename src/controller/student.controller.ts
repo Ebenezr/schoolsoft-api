@@ -87,11 +87,20 @@ router.post(
           term_two_fee: classInfo.term_2 ?? 0,
           term_three_fee: classInfo.term_3 ?? 0,
           term_one_balance:
-            Number(classInfo.term_1) + busFee + foodFee + boardingFee ?? 0,
+            Number(classInfo.term_1) +
+              (additionalPayments.bus_fee ? busFee : 0) +
+              (additionalPayments.food_fee ? foodFee : 0) +
+              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
           term_two_balance:
-            Number(classInfo.term_2) + busFee + foodFee + boardingFee ?? 0,
+            Number(classInfo.term_2) +
+              (additionalPayments.bus_fee ? busFee : 0) +
+              (additionalPayments.food_fee ? foodFee : 0) +
+              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
           term_three_balance:
-            Number(classInfo.term_3) + busFee + foodFee + boardingFee ?? 0,
+            Number(classInfo.term_3) +
+              (additionalPayments.bus_fee ? busFee : 0) +
+              (additionalPayments.food_fee ? foodFee : 0) +
+              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
         },
       });
 
@@ -202,11 +211,20 @@ router.patch(
           term_two_fee: classInfo.term_2 ?? 0,
           term_three_fee: classInfo.term_3 ?? 0,
           term_one_balance:
-            Number(classInfo.term_1) + busFee + foodFee + boardingFee ?? 0,
+            Number(classInfo.term_1) +
+              (additionalPayments.bus_fee ? busFee : 0) +
+              (additionalPayments.food_fee ? foodFee : 0) +
+              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
           term_two_balance:
-            Number(classInfo.term_2) + busFee + foodFee + boardingFee ?? 0,
+            Number(classInfo.term_2) +
+              (additionalPayments.bus_fee ? busFee : 0) +
+              (additionalPayments.food_fee ? foodFee : 0) +
+              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
           term_three_balance:
-            Number(classInfo.term_3) + busFee + foodFee + boardingFee ?? 0,
+            Number(classInfo.term_3) +
+              (additionalPayments.bus_fee ? busFee : 0) +
+              (additionalPayments.food_fee ? foodFee : 0) +
+              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
         },
       });
 
