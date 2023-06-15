@@ -87,14 +87,13 @@ model Class {
 }
 
 model Term {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  startDate      DateTime
-  endDate        DateTime
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  FeePayment     FeePayment[]
-  StudentTermFee StudentTermFee[]
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  startDate  DateTime
+  endDate    DateTime
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  FeePayment FeePayment[]
 }
 
 // food
@@ -122,16 +121,24 @@ model AdditionalFeeStudent {
 
 // table for storing student term fee plus additionalfee sum
 model StudentTermFee {
-  id              Int            @id @default(autoincrement())
-  Student         Student        @relation(fields: [studentId], references: [id], onUpdate: Cascade)
-  studentId       Int
-  Class           Class          @relation(fields: [classId], references: [id], onUpdate: Cascade)
-  classId         Int
-  termId          Int
-  tuition_fee     Decimal        @default(0)
-  bus_fee         Decimal        @default(0)
-  food_fee        Decimal        @default(0)
-  boarding_fee    Decimal        @default(0)
+  id                 Int     @id @default(autoincrement())
+  Student            Student @relation(fields: [studentId], references: [id], onUpdate: Cascade)
+  studentId          Int
+  Class              Class   @relation(fields: [classId], references: [id], onUpdate: Cascade)
+  classId            Int
+  // additionals
+  bus_fee            Decimal @default(0)
+  food_fee           Decimal @default(0)
+  boarding_fee       Decimal @default(0)
+  // sumation fees
+  term_one_fee       Decimal @default(0)
+  term_one_balance   Decimal @default(0)
+  term_two_fee       Decimal @default(0)
+  term_two_balance   Decimal @default(0)
+  term_three_fee     Decimal @default(0)
+  term_three_balance Decimal @default(0)
+  // total year fee
+
   total_fee       Decimal        @default(0)
   amount_paid     Decimal        @default(0)
   balance         Decimal        @default(0)
@@ -140,9 +147,6 @@ model StudentTermFee {
   updatedAt       DateTime       @updatedAt
   AdditionalFee   AdditionalFee? @relation(fields: [additionalFeeId], references: [id])
   additionalFeeId Int?
-  Term            Term           @relation(fields: [termId], references: [id])
-
-  @@unique([studentId, classId, termId])
 }
 
 model FeePayment {

@@ -34,30 +34,6 @@ router.post(
         throw new Error("Class not found");
       }
 
-      // Determine the term the student is joining
-      const currentDate = new Date(); // Current date
-      const term = await prisma.term.findFirst({
-        where: {
-          startDate: { lte: currentDate },
-          endDate: { gte: currentDate },
-        },
-      });
-
-      if (!term) {
-        throw new Error("No active term found");
-      }
-      // Assign the term ID to a variable
-      const termId = term.id;
-      // Get the fee for the corresponding term
-      let termFee = 0;
-
-      if (term.name === "Term 1") {
-        termFee = Number(classInfo.term_1) || 0;
-      } else if (term.name === "Term 2") {
-        termFee = Number(classInfo.term_2) || 0;
-      } else if (term.name === "Term 3") {
-        termFee = Number(classInfo.term_3) || 0;
-      }
       // Find additional fees from the database based on regex patterns
       const fees = await prisma.additionalFee.findMany({
         where: {
@@ -99,24 +75,17 @@ router.post(
         }
       }
 
-      const totalFee =
-        termFee +
-        (additionalPayments.bus_fee ? busFee : 0) +
-        (additionalPayments.food_fee ? foodFee : 0) +
-        (additionalPayments.boarding_fee ? boardingFee : 0);
-
       // Create the student term fee record
       const studentTermFee = await prisma.studentTermFee.create({
         data: {
           studentId: student.id,
           classId: data.classId,
-          tuition_fee: termFee,
-          termId,
-
           bus_fee: additionalPayments.bus_fee ? busFee : 0,
           food_fee: additionalPayments.food_fee ? foodFee : 0,
           boarding_fee: additionalPayments.boarding_fee ? boardingFee : 0,
-          total_fee: totalFee,
+          term_one_fee: classInfo.term_1 ?? 0,
+          term_two_fee: classInfo.term_2 ?? 0,
+          term_three_fee: classInfo.term_3 ?? 0,
         },
       });
 
@@ -157,32 +126,6 @@ router.patch(
 
       if (!classInfo) {
         throw new Error("Class not found");
-      }
-
-      // Determine the term the student is joining
-      const currentDate = new Date(); // Current date
-      const term = await prisma.term.findFirst({
-        where: {
-          startDate: { lte: currentDate },
-          endDate: { gte: currentDate },
-        },
-      });
-
-      if (!term) {
-        throw new Error("No active term found");
-      }
-      // Assign the term ID to a variable
-      const termId = term.id;
-
-      let termFee = 0;
-
-      // Get the fee for the corresponding term
-      if (term.name === "Term 1") {
-        termFee = Number(classInfo.term_1) || 0;
-      } else if (term.name === "Term 2") {
-        termFee = Number(classInfo.term_2) || 0;
-      } else if (term.name === "Term 3") {
-        termFee = Number(classInfo.term_3) || 0;
       }
 
       // Find additional fees from the database based on regex patterns
@@ -233,12 +176,6 @@ router.patch(
         }
       }
 
-      const totalFee =
-        termFee +
-        (additionalPayments.bus_fee ? busFee : 0) +
-        (additionalPayments.food_fee ? foodFee : 0) +
-        (additionalPayments.boarding_fee ? boardingFee : 0);
-
       // Delete existing StudentTermFee records
       await prisma.studentTermFee.deleteMany({
         where: {
@@ -251,24 +188,23 @@ router.patch(
         data: {
           studentId: student.id,
           classId: data.classId,
-          tuition_fee: termFee,
-          termId,
 
           bus_fee: additionalPayments.bus_fee ? busFee : 0,
           food_fee: additionalPayments.food_fee ? foodFee : 0,
           boarding_fee: additionalPayments.boarding_fee ? boardingFee : 0,
-          total_fee: totalFee,
+          term_one_fee: classInfo.term_1 ?? 0,
+          term_two_fee: classInfo.term_2 ?? 0,
+          term_three_fee: classInfo.term_3 ?? 0,
         },
       });
 
       res.status(200).json({
         student,
-        term,
-        termFee,
+
         busFee,
         foodFee,
         boardingFee,
-        totalFee,
+
         studentTermFee,
       });
     } catch (error) {
