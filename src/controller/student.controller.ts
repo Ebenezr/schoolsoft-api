@@ -86,6 +86,12 @@ router.post(
           term_one_fee: classInfo.term_1 ?? 0,
           term_two_fee: classInfo.term_2 ?? 0,
           term_three_fee: classInfo.term_3 ?? 0,
+          term_one_balance:
+            Number(classInfo.term_1) + busFee + foodFee + boardingFee ?? 0,
+          term_two_balance:
+            Number(classInfo.term_2) + busFee + foodFee + boardingFee ?? 0,
+          term_three_balance:
+            Number(classInfo.term_3) + busFee + foodFee + boardingFee ?? 0,
         },
       });
 
@@ -195,6 +201,12 @@ router.patch(
           term_one_fee: classInfo.term_1 ?? 0,
           term_two_fee: classInfo.term_2 ?? 0,
           term_three_fee: classInfo.term_3 ?? 0,
+          term_one_balance:
+            Number(classInfo.term_1) + busFee + foodFee + boardingFee ?? 0,
+          term_two_balance:
+            Number(classInfo.term_2) + busFee + foodFee + boardingFee ?? 0,
+          term_three_balance:
+            Number(classInfo.term_3) + busFee + foodFee + boardingFee ?? 0,
         },
       });
 
