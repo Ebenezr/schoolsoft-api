@@ -6,58 +6,6 @@ const router = Router();
 
 // post new fee payment
 
-// router.post(
-//   "/feepayments/post",
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       const data = req.body;
-//       const feePayment = await prisma.feePayment.create({ data });
-//       res.status(201).json(feePayment);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
-
-// post new fee payment
-// router.post(
-//   "/fee-payments/post",
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       const data = req.body;
-//       const feePayment = await prisma.feePayment.create({ data });
-
-//       const studentTermFee = await prisma.studentTermFee.findFirst({
-//         where: {
-//           studentId: feePayment.studentId,
-//           classId: feePayment.classId,
-//         },
-//       });
-
-//       if (studentTermFee) {
-//         const updatedStudentTermFee = await prisma.studentTermFee.update({
-//           where: { id: studentTermFee.id },
-//           data: {
-//             amount_paid: {
-//               increment: feePayment.amount,
-//             },
-//             balance: {
-//               decrement: feePayment.amount,
-//             },
-//           },
-//         });
-
-//         res.status(201).json({ feePayment, updatedStudentTermFee });
-//       } else {
-//         res
-//           .status(400)
-//           .json({ message: "No term fee found for this student and class." });
-//       }
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
 router.post(
   "/fee-payments/post",
   async (req: Request, res: Response, next: NextFunction) => {
@@ -131,6 +79,88 @@ router.post(
     }
   }
 );
+// router.post(
+//   "/fee-payments/post",
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const data = req.body;
+//       const feePayment = await prisma.feePayment.create({ data });
+
+//       const studentTermFee = await prisma.studentTermFee.findFirst({
+//         where: {
+//           studentId: feePayment.studentId,
+//           classId: feePayment.classId,
+//         },
+//       });
+
+//       const term = await prisma.term.findFirst({
+//         where: {
+//           id: feePayment.termId,
+//         },
+//       });
+
+//       if (studentTermFee && term) {
+//         let updateData: Prisma.StudentTermFeeUpdateInput = {
+//           amount_paid: {
+//             increment: Number(feePayment.amount),
+//           },
+//           balance: {
+//             decrement: Number(feePayment.amount),
+//           },
+//         };
+
+//         if (term.name === "Term 2") {
+//           // Reduce term_two_balance
+//           updateData.term_two_balance = {
+//             decrement: Number(feePayment.amount),
+//           };
+//         } else if (term.name === "Term 3") {
+//           // Reduce term_three_balance
+//           updateData.term_three_balance = {
+//             decrement: Number(feePayment.amount),
+//           };
+//         }
+
+//         // Calculate overpayment and change
+//         const overpayment =
+//           Number(studentTermFee.balance) - Number(feePayment.amount);
+//         const change = Math.max(overpayment, 0);
+
+//         if (term.name === "Term 2" && overpayment > 0) {
+//           // Reduce term_three_balance for overpayment
+//           updateData.term_three_balance = {
+//             decrement: overpayment,
+//           };
+//         } else if (term.name === "Term 3") {
+//           if (overpayment > 0) {
+//             // Add overpayment to balance
+//             updateData.balance = {
+//               increment: overpayment,
+//             };
+//           } else {
+//             // Reduce balance for change
+//             updateData.balance = {
+//               decrement: Math.abs(change),
+//             };
+//           }
+//         }
+
+//         const updatedStudentTermFee = await prisma.studentTermFee.update({
+//           where: { id: studentTermFee.id },
+//           data: updateData,
+//         });
+
+//         res.status(201).json({ feePayment, updatedStudentTermFee });
+//       } else {
+//         res
+//           .status(400)
+//           .json({ message: "No term fee found for this student and class." });
+//       }
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
 
 // get all fee payments
 router.get(
