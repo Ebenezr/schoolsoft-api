@@ -134,12 +134,10 @@ router.delete(
       const { Class } = teacherToDelete;
 
       if (Class && Class.length > 0) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Cannot delete a teacher who is assigned as the teacher for a class",
-          });
+        return res.status(400).json({
+          message:
+            "Cannot delete a teacher who is assigned as the teacher for a class",
+        });
       }
 
       await prisma.teacher.delete({
@@ -154,7 +152,7 @@ router.delete(
     }
   }
 );
-
+// seach teacher
 router.get(
   "/teachers/search/:name",
   async (req: Request, res: Response, next: NextFunction) => {
