@@ -111,23 +111,46 @@ router.patch(
   }
 );
 
-//   delete student
-
+// delete teacher
 router.delete(
   "/teacher/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const teacher = await prisma.teacher.delete({
+
+      const teacherToDelete = await prisma.teacher.findUnique({
+        where: {
+          id: Number(id),
+        },
+        include: {
+          Class: true,
+        },
+      });
+
+      if (!teacherToDelete) {
+        return res.status(404).json({ message: "Teacher not found" });
+      }
+
+      const { Class } = teacherToDelete;
+
+      if (Class && Class.length > 0) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Cannot delete a teacher who is assigned as the teacher for a class",
+          });
+      }
+
+      await prisma.teacher.delete({
         where: {
           id: Number(id),
         },
       });
 
-      res.status(204).json(teacher);
+      res.status(204).end();
     } catch (error) {
       next(error);
-      return res.status(404).json({ message: "Teacher not found" });
     }
   }
 );
