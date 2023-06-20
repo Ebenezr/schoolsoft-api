@@ -1,5 +1,5 @@
-import { NextFunction, Response, Request, Router } from "express";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { NextFunction, Response, Request, Router } from 'express';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
 // post new fee payment
 
 router.post(
-  "/fee-payments/post",
+  '/fee-payments/post',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
@@ -29,11 +29,14 @@ router.post(
       if (studentTermFee && term) {
         // Define type for updateData
         type UpdateDataType = {
-          amount_paid?: {
+          term_one_paid?: {
             increment: Prisma.Decimal;
           };
-          balance?: {
-            decrement: Prisma.Decimal;
+          term_two_paid?: {
+            increment: Prisma.Decimal;
+          };
+          term_three_paid?: {
+            increment: Prisma.Decimal;
           };
           term_one_balance?: {
             decrement: Prisma.Decimal;
@@ -46,20 +49,16 @@ router.post(
           };
         };
 
-        let updateData: UpdateDataType = {
-          amount_paid: {
-            increment: feePayment.amount,
-          },
-          balance: {
-            decrement: feePayment.amount,
-          },
-        };
+        let updateData: UpdateDataType = {};
 
-        if (term.name === "Term 1") {
+        if (term.name === 'Term 1') {
+          updateData.term_one_paid = { increment: feePayment.amount };
           updateData.term_one_balance = { decrement: feePayment.amount };
-        } else if (term.name === "Term 2") {
+        } else if (term.name === 'Term 2') {
+          updateData.term_two_paid = { increment: feePayment.amount };
           updateData.term_two_balance = { decrement: feePayment.amount };
-        } else if (term.name === "Term 3") {
+        } else if (term.name === 'Term 3') {
+          updateData.term_three_paid = { increment: feePayment.amount };
           updateData.term_three_balance = { decrement: feePayment.amount };
         }
 
@@ -72,99 +71,17 @@ router.post(
       } else {
         res
           .status(400)
-          .json({ message: "No term fee found for this student and class." });
+          .json({ message: 'No term fee found for this student and class.' });
       }
     } catch (error) {
       next(error);
     }
   }
 );
-// router.post(
-//   "/fee-payments/post",
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       const data = req.body;
-//       const feePayment = await prisma.feePayment.create({ data });
-
-//       const studentTermFee = await prisma.studentTermFee.findFirst({
-//         where: {
-//           studentId: feePayment.studentId,
-//           classId: feePayment.classId,
-//         },
-//       });
-
-//       const term = await prisma.term.findFirst({
-//         where: {
-//           id: feePayment.termId,
-//         },
-//       });
-
-//       if (studentTermFee && term) {
-//         let updateData: Prisma.StudentTermFeeUpdateInput = {
-//           amount_paid: {
-//             increment: Number(feePayment.amount),
-//           },
-//           balance: {
-//             decrement: Number(feePayment.amount),
-//           },
-//         };
-
-//         if (term.name === "Term 2") {
-//           // Reduce term_two_balance
-//           updateData.term_two_balance = {
-//             decrement: Number(feePayment.amount),
-//           };
-//         } else if (term.name === "Term 3") {
-//           // Reduce term_three_balance
-//           updateData.term_three_balance = {
-//             decrement: Number(feePayment.amount),
-//           };
-//         }
-
-//         // Calculate overpayment and change
-//         const overpayment =
-//           Number(studentTermFee.balance) - Number(feePayment.amount);
-//         const change = Math.max(overpayment, 0);
-
-//         if (term.name === "Term 2" && overpayment > 0) {
-//           // Reduce term_three_balance for overpayment
-//           updateData.term_three_balance = {
-//             decrement: overpayment,
-//           };
-//         } else if (term.name === "Term 3") {
-//           if (overpayment > 0) {
-//             // Add overpayment to balance
-//             updateData.balance = {
-//               increment: overpayment,
-//             };
-//           } else {
-//             // Reduce balance for change
-//             updateData.balance = {
-//               decrement: Math.abs(change),
-//             };
-//           }
-//         }
-
-//         const updatedStudentTermFee = await prisma.studentTermFee.update({
-//           where: { id: studentTermFee.id },
-//           data: updateData,
-//         });
-
-//         res.status(201).json({ feePayment, updatedStudentTermFee });
-//       } else {
-//         res
-//           .status(400)
-//           .json({ message: "No term fee found for this student and class." });
-//       }
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
 
 // get all fee payments
 router.get(
-  "/feepayments/all",
+  '/feepayments/all',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const feePayment = await prisma.feePayment.findMany();
@@ -176,7 +93,7 @@ router.get(
 );
 
 router.get(
-  "/feepayments",
+  '/feepayments',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
@@ -186,7 +103,7 @@ router.get(
 
       const students = await prisma.feePayment.findMany({
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
 
         skip: startIndex,
@@ -210,7 +127,7 @@ router.get(
 
 // get one fee payment
 router.get(
-  "/feepayment/:id",
+  '/feepayment/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -221,7 +138,7 @@ router.get(
         },
       });
       if (!feePayment) {
-        return res.status(404).json({ message: "Fee payment not found" });
+        return res.status(404).json({ message: 'Fee payment not found' });
       }
       res.status(200).json(feePayment);
     } catch (error) {
@@ -230,75 +147,8 @@ router.get(
   }
 );
 
-// update fee payment
-// router.patch(
-//   "/fee-payment/:id",
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       const { id } = req.params;
-//       const newAmount = parseFloat(req.body.amount); // Parse `Decimal` to float
-
-//       if (isNaN(newAmount)) {
-//         return res
-//           .status(400)
-//           .json({ message: "Invalid amount in request body" });
-//       }
-
-//       const oldFeePayment = await prisma.feePayment.findUnique({
-//         where: {
-//           id: Number(id),
-//         },
-//       });
-
-//       if (!oldFeePayment) {
-//         return res.status(404).json({ message: "Fee payment not found" });
-//       }
-
-//       const oldAmount = oldFeePayment.amount.toNumber() || 0;
-
-//       const amountDifference = newAmount - oldAmount;
-
-//       const updatedFeePayment = await prisma.feePayment.update({
-//         where: {
-//           id: Number(id),
-//         },
-//         data: req.body,
-//       });
-
-//       // Fetch the StudentTermFee for the student and class
-//       const studentTermFee = await prisma.studentTermFee.findFirst({
-//         where: {
-//           studentId: oldFeePayment.studentId,
-//           classId: oldFeePayment.classId,
-//         },
-//       });
-
-//       if (studentTermFee) {
-//         // Update StudentTermFee
-//         await prisma.studentTermFee.update({
-//           where: { id: studentTermFee.id },
-//           data: {
-//             amount_paid: {
-//               increment: amountDifference,
-//             },
-//             balance: {
-//               decrement: amountDifference,
-//             },
-//           },
-//         });
-//       }
-
-//       res.status(200).json(updatedFeePayment);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
-
-// ...
-
 router.patch(
-  "/fee-payments/:id",
+  '/fee-payments/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const data = req.body;
@@ -313,7 +163,7 @@ router.patch(
 
       // If the original fee payment doesn't exist, throw an error
       if (!originalFeePayment) {
-        return res.status(404).json({ message: "Fee payment not found." });
+        return res.status(404).json({ message: 'Fee payment not found.' });
       }
 
       // Update the fee payment data
@@ -342,20 +192,16 @@ router.patch(
       });
 
       if (studentTermFee && term) {
-        let updateData: Prisma.StudentTermFeeUpdateInput = {
-          amount_paid: {
-            increment: feeDifference,
-          },
-          balance: {
-            decrement: feeDifference,
-          },
-        };
+        let updateData: Prisma.StudentTermFeeUpdateInput = {};
 
-        if (term.name === "Term 1") {
+        if (term.name === 'Term 1') {
+          updateData.term_one_paid = { increment: feeDifference };
           updateData.term_one_balance = { decrement: feeDifference };
-        } else if (term.name === "Term 2") {
+        } else if (term.name === 'Term 2') {
+          updateData.term_two_paid = { increment: feeDifference };
           updateData.term_two_balance = { decrement: feeDifference };
-        } else if (term.name === "Term 3") {
+        } else if (term.name === 'Term 3') {
+          updateData.term_three_paid = { increment: feeDifference };
           updateData.term_three_balance = { decrement: feeDifference };
         }
 
@@ -368,7 +214,7 @@ router.patch(
       } else {
         res
           .status(400)
-          .json({ message: "No term fee found for this student and class." });
+          .json({ message: 'No term fee found for this student and class.' });
       }
     } catch (error) {
       next(error);
@@ -379,7 +225,7 @@ router.patch(
 // delete fee payment
 
 router.delete(
-  "/fee-payments/:id",
+  '/fee-payments/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     const feePaymentId = parseInt(req.params.id, 10);
 
@@ -392,7 +238,7 @@ router.delete(
       });
 
       if (!feePayment) {
-        return res.status(404).json({ message: "Fee payment not found" });
+        return res.status(404).json({ message: 'Fee payment not found' });
       }
 
       // Find the student term fee record
@@ -406,17 +252,17 @@ router.delete(
       if (!studentTermFee) {
         return res
           .status(404)
-          .json({ message: "No term fee found for this student and class." });
+          .json({ message: 'No term fee found for this student and class.' });
       }
 
       // Determine which term balance to update
-      let termBalanceField = "";
+      let termBalanceField = '';
       if (feePayment.termId === 1) {
-        termBalanceField = "term_one_balance";
+        termBalanceField = 'term_one_balance';
       } else if (feePayment.termId === 2) {
-        termBalanceField = "term_two_balance";
+        termBalanceField = 'term_two_balance';
       } else if (feePayment.termId === 3) {
-        termBalanceField = "term_three_balance";
+        termBalanceField = 'term_three_balance';
       }
 
       // Update the student term fee balance

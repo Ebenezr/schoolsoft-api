@@ -1,12 +1,12 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import { NextFunction, Request, Response, Router } from 'express';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const router = Router();
 
 // post new student
 router.post(
-  "/students/post",
+  '/students/post',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
@@ -31,16 +31,16 @@ router.post(
       });
 
       if (!classInfo) {
-        throw new Error("Class not found");
+        throw new Error('Class not found');
       }
 
       // Find additional fees from the database based on regex patterns
       const fees = await prisma.additionalFee.findMany({
         where: {
           OR: [
-            { name: { contains: "bus", mode: "insensitive" } },
-            { name: { contains: "food", mode: "insensitive" } },
-            { name: { contains: "boarding", mode: "insensitive" } },
+            { name: { contains: 'bus', mode: 'insensitive' } },
+            { name: { contains: 'food', mode: 'insensitive' } },
+            { name: { contains: 'boarding', mode: 'insensitive' } },
           ],
         },
       });
@@ -64,13 +64,13 @@ router.post(
       let boardingFee = 0;
 
       for (const fee of fees) {
-        if (fee.name.toLowerCase().includes("bus")) {
+        if (fee.name.toLowerCase().includes('bus')) {
           busFee += Number(fee.amount);
         }
-        if (fee.name.toLowerCase().includes("food")) {
+        if (fee.name.toLowerCase().includes('food')) {
           foodFee += Number(fee.amount);
         }
-        if (fee.name.toLowerCase().includes("boarding")) {
+        if (fee.name.toLowerCase().includes('boarding')) {
           boardingFee += Number(fee.amount);
         }
       }
@@ -84,23 +84,29 @@ router.post(
           food_fee: additionalPayments.food_fee ? foodFee : 0,
           boarding_fee: additionalPayments.boarding_fee ? boardingFee : 0,
           term_one_fee: classInfo.term_1 ?? 0,
-          term_two_fee: classInfo.term_2 ?? 0,
-          term_three_fee: classInfo.term_3 ?? 0,
+          term_one_paid: additionalPayments.term_one_paid ?? 0,
           term_one_balance:
             Number(classInfo.term_1) +
               (additionalPayments.bus_fee ? busFee : 0) +
               (additionalPayments.food_fee ? foodFee : 0) +
-              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
+              (additionalPayments.boarding_fee ? boardingFee : 0) -
+              (additionalPayments.term_one_paid ?? 0) ?? 0,
+          term_two_fee: classInfo.term_2 ?? 0,
+          term_two_paid: additionalPayments.term_two_paid ?? 0,
           term_two_balance:
             Number(classInfo.term_2) +
               (additionalPayments.bus_fee ? busFee : 0) +
               (additionalPayments.food_fee ? foodFee : 0) +
-              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
+              (additionalPayments.boarding_fee ? boardingFee : 0) -
+              (additionalPayments.term_two_paid ?? 0) ?? 0,
+          term_three_fee: classInfo.term_3 ?? 0,
+          term_three_paid: additionalPayments.term_three_paid ?? 0,
           term_three_balance:
             Number(classInfo.term_3) +
               (additionalPayments.bus_fee ? busFee : 0) +
               (additionalPayments.food_fee ? foodFee : 0) +
-              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
+              (additionalPayments.boarding_fee ? boardingFee : 0) -
+              (additionalPayments.term_three_paid ?? 0) ?? 0,
         },
       });
 
@@ -113,7 +119,7 @@ router.post(
 
 // PATCH existing student
 router.patch(
-  "/student/:id",
+  '/student/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -140,16 +146,16 @@ router.patch(
       });
 
       if (!classInfo) {
-        throw new Error("Class not found");
+        throw new Error('Class not found');
       }
 
       // Find additional fees from the database based on regex patterns
       const fees = await prisma.additionalFee.findMany({
         where: {
           OR: [
-            { name: { contains: "bus", mode: "insensitive" } },
-            { name: { contains: "food", mode: "insensitive" } },
-            { name: { contains: "boarding", mode: "insensitive" } },
+            { name: { contains: 'bus', mode: 'insensitive' } },
+            { name: { contains: 'food', mode: 'insensitive' } },
+            { name: { contains: 'boarding', mode: 'insensitive' } },
           ],
         },
       });
@@ -180,13 +186,13 @@ router.patch(
       let boardingFee = 0;
 
       for (const fee of fees) {
-        if (fee.name.toLowerCase().includes("bus")) {
+        if (fee.name.toLowerCase().includes('bus')) {
           busFee += Number(fee.amount);
         }
-        if (fee.name.toLowerCase().includes("food")) {
+        if (fee.name.toLowerCase().includes('food')) {
           foodFee += Number(fee.amount);
         }
-        if (fee.name.toLowerCase().includes("boarding")) {
+        if (fee.name.toLowerCase().includes('boarding')) {
           boardingFee += Number(fee.amount);
         }
       }
@@ -197,34 +203,38 @@ router.patch(
           studentId: student.id,
         },
       });
-
-      // Create new StudentTermFee record
+      // Create the student term fee record
       const studentTermFee = await prisma.studentTermFee.create({
         data: {
           studentId: student.id,
           classId: data.classId,
-
           bus_fee: additionalPayments.bus_fee ? busFee : 0,
           food_fee: additionalPayments.food_fee ? foodFee : 0,
           boarding_fee: additionalPayments.boarding_fee ? boardingFee : 0,
           term_one_fee: classInfo.term_1 ?? 0,
-          term_two_fee: classInfo.term_2 ?? 0,
-          term_three_fee: classInfo.term_3 ?? 0,
+          term_one_paid: additionalPayments.term_one_paid ?? 0,
           term_one_balance:
             Number(classInfo.term_1) +
               (additionalPayments.bus_fee ? busFee : 0) +
               (additionalPayments.food_fee ? foodFee : 0) +
-              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
+              (additionalPayments.boarding_fee ? boardingFee : 0) -
+              (additionalPayments.term_one_paid ?? 0) ?? 0,
+          term_two_fee: classInfo.term_2 ?? 0,
+          term_two_paid: additionalPayments.term_two_paid ?? 0,
           term_two_balance:
             Number(classInfo.term_2) +
               (additionalPayments.bus_fee ? busFee : 0) +
               (additionalPayments.food_fee ? foodFee : 0) +
-              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
+              (additionalPayments.boarding_fee ? boardingFee : 0) -
+              (additionalPayments.term_two_paid ?? 0) ?? 0,
+          term_three_fee: classInfo.term_3 ?? 0,
+          term_three_paid: additionalPayments.term_three_paid ?? 0,
           term_three_balance:
             Number(classInfo.term_3) +
               (additionalPayments.bus_fee ? busFee : 0) +
               (additionalPayments.food_fee ? foodFee : 0) +
-              (additionalPayments.boarding_fee ? boardingFee : 0) ?? 0,
+              (additionalPayments.boarding_fee ? boardingFee : 0) -
+              (additionalPayments.term_three_paid ?? 0) ?? 0,
         },
       });
 
@@ -245,7 +255,7 @@ router.patch(
 
 // get all students with pagination
 router.get(
-  "/students",
+  '/students',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
@@ -255,7 +265,7 @@ router.get(
 
       const students = await prisma.student.findMany({
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         // return student's class name
         include: {
@@ -284,12 +294,12 @@ router.get(
 
 // get all students
 router.get(
-  "/students/all",
+  '/students/all',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const student = await prisma.student.findMany({
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         include: {
           Class: true,
@@ -304,7 +314,7 @@ router.get(
 
 // get one student
 router.get(
-  "/student/:id",
+  '/student/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -314,7 +324,7 @@ router.get(
         },
       });
       if (!student) {
-        return res.status(404).json({ message: "Student not found" });
+        return res.status(404).json({ message: 'Student not found' });
       }
       res.status(200).json(student);
     } catch (error) {
@@ -325,7 +335,7 @@ router.get(
 
 // delete student
 router.delete(
-  "/student/:id",
+  '/student/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -338,13 +348,13 @@ router.delete(
       res.status(204).json(student);
     } catch (error) {
       next(error);
-      return res.status(404).json({ message: "Student not found" });
+      return res.status(404).json({ message: 'Student not found' });
     }
   }
 );
 // search students by name
 router.get(
-  "/students/search/:name",
+  '/students/search/:name',
   async (req: Request, res: Response, next: NextFunction) => {
     const { name } = req.params;
     try {
@@ -358,14 +368,14 @@ router.get(
           OR: [
             {
               first_name: {
-                contains: name?.toString().toLowerCase() || "",
-                mode: "insensitive",
+                contains: name?.toString().toLowerCase() || '',
+                mode: 'insensitive',
               },
             },
             {
               last_name: {
-                contains: name?.toString().toLowerCase() || "",
-                mode: "insensitive",
+                contains: name?.toString().toLowerCase() || '',
+                mode: 'insensitive',
               },
             },
           ],
@@ -375,7 +385,7 @@ router.get(
       });
 
       if (!students) {
-        return res.status(404).json({ error: "student not found" });
+        return res.status(404).json({ error: 'student not found' });
       }
 
       const totalItems = await prisma.student.count({
@@ -383,14 +393,14 @@ router.get(
           OR: [
             {
               first_name: {
-                contains: name?.toString().toLowerCase() || "",
-                mode: "insensitive",
+                contains: name?.toString().toLowerCase() || '',
+                mode: 'insensitive',
               },
             },
             {
               last_name: {
-                contains: name?.toString().toLowerCase() || "",
-                mode: "insensitive",
+                contains: name?.toString().toLowerCase() || '',
+                mode: 'insensitive',
               },
             },
           ],

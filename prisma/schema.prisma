@@ -132,10 +132,13 @@ model StudentTermFee {
   boarding_fee       Decimal @default(0)
   // sumation fees
   term_one_fee       Decimal @default(0)
+  term_one_paid      Decimal @default(0)
   term_one_balance   Decimal @default(0)
   term_two_fee       Decimal @default(0)
+  term_two_paid      Decimal @default(0)
   term_two_balance   Decimal @default(0)
   term_three_fee     Decimal @default(0)
+  term_three_paid    Decimal @default(0)
   term_three_balance Decimal @default(0)
   // total year fee
 
