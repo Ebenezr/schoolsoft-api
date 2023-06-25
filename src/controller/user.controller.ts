@@ -1,14 +1,14 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { NextFunction, Request, Response, Router } from 'express';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const router = Router();
-const bcrypt = require("bcryptjs");
+const bcrypt = require('bcryptjs');
 
 // ROUTES
 // create new user
 router.post(
-  "/users/post",
+  '/users/post',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // CHECK IF USER EXISTS
@@ -16,7 +16,7 @@ router.post(
         where: { email: req.body.email },
       });
       if (user) {
-        return res.status(400).json({ message: "User already exists" });
+        return res.status(400).json({ message: 'User already exists' });
       }
       const password = req.body.password;
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,7 +33,7 @@ router.post(
 
 // get all users
 router.get(
-  "/users",
+  '/users',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
@@ -43,7 +43,7 @@ router.get(
 
       const users = await prisma.user.findMany({
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
 
         skip: startIndex,
@@ -65,7 +65,7 @@ router.get(
 
 // get one user
 router.get(
-  "/user/:id",
+  '/user/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -75,7 +75,7 @@ router.get(
         },
       });
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: 'User not found' });
       }
       res.status(200).json(user);
     } catch (error) {
@@ -86,7 +86,7 @@ router.get(
 
 // update user
 router.patch(
-  "/user/:id",
+  '/user/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -100,23 +100,24 @@ router.patch(
       res.status(202).json(user);
     } catch (error) {
       next(error);
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
   }
 );
 
-// delete user
+// delete a user
 router.delete(
-  "/user/:id",
+  `/user/delete/:id`,
   async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
     try {
-      const { id } = req.params;
-      await prisma.user.delete({
-        where: {
-          id: Number(id),
-        },
+      const user = await prisma.user.delete({
+        where: { id: Number(id) },
       });
-      res.status(204).json({ message: "User deleted" });
+      if (user && user.superuser) {
+        return res.status(403).json({ error: 'Superuser cannot be deleted' });
+      }
+      res.json(user);
     } catch (error) {
       next(error);
     }
@@ -125,7 +126,7 @@ router.delete(
 
 // fetch users by name
 router.get(
-  "/users/search/:name",
+  '/users/search/:name',
   async (req: Request, res: Response, next: NextFunction) => {
     const { name } = req.params;
     try {
@@ -137,8 +138,8 @@ router.get(
       const users = await prisma.user.findMany({
         where: {
           name: {
-            contains: name?.toString().toLowerCase() || "",
-            mode: "insensitive",
+            contains: name?.toString().toLowerCase() || '',
+            mode: 'insensitive',
           },
         },
         skip: startIndex,
@@ -146,14 +147,14 @@ router.get(
       });
 
       if (!users) {
-        return res.status(404).json({ error: "user not found" });
+        return res.status(404).json({ error: 'user not found' });
       }
 
       const totalItems = await prisma.user.count({
         where: {
           name: {
-            contains: name?.toString().toLowerCase() || "",
-            mode: "insensitive",
+            contains: name?.toString().toLowerCase() || '',
+            mode: 'insensitive',
           },
         },
       });
