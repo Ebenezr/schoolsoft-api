@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import { NextFunction, Request, Response, Router } from 'express';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
 // post new class
 
 router.post(
-  "/classes/post",
+  '/classes/post',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
@@ -21,7 +21,7 @@ router.post(
 
 // get all classes
 router.get(
-  "/classes/all",
+  '/classes/all',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const grade = await prisma.class.findMany({
@@ -37,7 +37,7 @@ router.get(
 );
 
 router.get(
-  "/classes",
+  '/classes',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
@@ -47,7 +47,7 @@ router.get(
 
       const students = await prisma.class.findMany({
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         // return teachers class name fullname `firstname + last_name
         include: {
@@ -75,7 +75,7 @@ router.get(
 
 // Endpoint for getting students of a specific class
 router.get(
-  "/class/:classId/students",
+  '/class/:classId/students',
   async (req: Request, res: Response, next: NextFunction) => {
     const classId = parseInt(req.params.classId);
     const page = parseInt(req.query.page as string, 10) || 1;
@@ -85,7 +85,7 @@ router.get(
     const endIndex = startIndex + limit;
 
     if (isNaN(classId)) {
-      res.status(400).json({ error: "Invalid class id" });
+      res.status(400).json({ error: 'Invalid class id' });
       return;
     }
 
@@ -112,7 +112,7 @@ router.get(
       if (students.length === 0) {
         res
           .status(404)
-          .json({ message: "No students found for the given class id" });
+          .json({ message: 'No students found for the given class id' });
         return;
       }
 
@@ -133,7 +133,7 @@ router.get(
 // get one class
 
 router.get(
-  "/class/:id",
+  '/class/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -147,7 +147,7 @@ router.get(
         },
       });
       if (!grade) {
-        return res.status(404).json({ message: "Class not found" });
+        return res.status(404).json({ message: 'Class not found' });
       }
       res.status(200).json(grade);
     } catch (error) {
@@ -159,7 +159,7 @@ router.get(
 //   update class
 
 router.patch(
-  "/class/:id",
+  '/class/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -172,14 +172,55 @@ router.patch(
       res.status(202).json(grade);
     } catch (error) {
       next(error);
-      return res.status(404).json({ message: "Class not found" });
+      return res.status(404).json({ message: 'Class not found' });
     }
   }
 );
 
+// // delete class
+// router.delete(
+//   "/class/:id",
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const { id } = req.params;
+
+//       const classToDelete = await prisma.class.findUnique({
+//         where: {
+//           id: Number(id),
+//         },
+//         include: {
+//           Teacher: true,
+//         },
+//       });
+
+//       if (!classToDelete) {
+//         return res.status(404).json({ message: "Class not found" });
+//       }
+
+//       const { Teacher } = classToDelete;
+
+//       if (Teacher) {
+//         return res
+//           .status(400)
+//           .json({ message: "Cannot delete a class that has a teacher" });
+//       }
+
+//       await prisma.class.delete({
+//         where: {
+//           id: Number(id),
+//         },
+//       });
+
+//       res.status(204).end();
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
+
 // delete class
 router.delete(
-  "/class/:id",
+  '/class/:id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -188,21 +229,10 @@ router.delete(
         where: {
           id: Number(id),
         },
-        include: {
-          Teacher: true,
-        },
       });
 
       if (!classToDelete) {
-        return res.status(404).json({ message: "Class not found" });
-      }
-
-      const { Teacher } = classToDelete;
-
-      if (Teacher) {
-        return res
-          .status(400)
-          .json({ message: "Cannot delete a class that has a teacher" });
+        return res.status(404).json({ message: 'Class not found' });
       }
 
       await prisma.class.delete({
@@ -220,7 +250,7 @@ router.delete(
 
 // search class
 router.get(
-  "/classes/search/:name",
+  '/classes/search/:name',
   async (req: Request, res: Response, next: NextFunction) => {
     const { name } = req.params;
     try {
@@ -232,8 +262,8 @@ router.get(
       const classes = await prisma.class.findMany({
         where: {
           name: {
-            contains: name?.toString().toLowerCase() || "",
-            mode: "insensitive",
+            contains: name?.toString().toLowerCase() || '',
+            mode: 'insensitive',
           },
         },
         skip: startIndex,
@@ -241,14 +271,14 @@ router.get(
       });
 
       if (!classes) {
-        return res.status(404).json({ error: "class not found" });
+        return res.status(404).json({ error: 'class not found' });
       }
 
       const totalItems = await prisma.class.count({
         where: {
           name: {
-            contains: name?.toString().toLowerCase() || "",
-            mode: "insensitive",
+            contains: name?.toString().toLowerCase() || '',
+            mode: 'insensitive',
           },
         },
       });
