@@ -11,40 +11,21 @@ datasource db {
 }
 
 model Student {
-  id                   Int                    @id @default(autoincrement())
-  first_name           String
-  last_name            String
-  dob                  DateTime
-  gender               String
-  Class                Class                  @relation(fields: [classId], references: [id], onUpdate: Cascade)
-  classId              Int
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
-  AdditionalFeeStudent AdditionalFeeStudent[]
-  FeePayment           FeePayment[]
-  StudentTermFee       StudentTermFee[]
-  StudentGuardian      StudentGuardian[]
-}
-
-model Guardian {
-  id              Int               @id @default(autoincrement())
-  first_name      String
-  last_name       String
-  phone           String
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  StudentGuardian StudentGuardian[]
-}
-
-model StudentGuardian {
-  id           Int      @id @default(autoincrement())
-  Student      Student  @relation(fields: [studentId], references: [id], onUpdate: Cascade)
-  studentId    Int
-  Guardian     Guardian @relation(fields: [guardianId], references: [id], onUpdate: Cascade)
-  guardianId   Int
-  relationship String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int          @id @default(autoincrement())
+  first_name    String
+  last_name     String
+  dob           DateTime
+  gender        String
+  Class         Class        @relation(fields: [classId], references: [id], onUpdate: Cascade)
+  classId       Int
+  guardianName  String?
+  guardianPhone String?
+  feeAmount     Decimal      @default(0)
+  feePaid       Decimal      @default(0)
+  feeBalance    Decimal      @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  FeePayment    FeePayment[]
 }
 
 model Teacher {
@@ -72,84 +53,14 @@ model User {
 }
 
 model Class {
-  id             Int              @id @default(autoincrement())
-  name           String
-  Teacher        Teacher          @relation(fields: [teacherId], references: [id], onUpdate: Cascade)
-  teacherId      Int
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  term_1         Decimal?         @default(0)
-  term_2         Decimal?         @default(0)
-  term_3         Decimal?         @default(0)
-  Student        Student[]
-  FeePayment     FeePayment[]
-  StudentTermFee StudentTermFee[]
-}
-
-model Term {
   id         Int          @id @default(autoincrement())
-  name       String       @unique
-  startDate  DateTime
-  endDate    DateTime
+  name       String
+  Teacher    Teacher      @relation(fields: [teacherId], references: [id], onUpdate: Cascade)
+  teacherId  Int
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
+  Student    Student[]
   FeePayment FeePayment[]
-}
-
-// food
-// accommodation
-// transport
-model AdditionalFee {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  amount               Decimal
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
-  AdditionalFeeStudent AdditionalFeeStudent[]
-  StudentTermFee       StudentTermFee[]
-}
-
-model AdditionalFeeStudent {
-  id              Int           @id @default(autoincrement())
-  Student         Student       @relation(fields: [studentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  studentId       Int
-  AdditionalFee   AdditionalFee @relation(fields: [additionalFeeId], references: [id], onUpdate: Cascade)
-  additionalFeeId Int
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-}
-
-// table for storing student term fee plus additionalfee sum
-model StudentTermFee {
-  id                 Int     @id @default(autoincrement())
-  Student            Student @relation(fields: [studentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  studentId          Int
-  Class              Class   @relation(fields: [classId], references: [id], onUpdate: Cascade)
-  classId            Int
-  // additionals
-  bus_fee            Decimal @default(0)
-  food_fee           Decimal @default(0)
-  boarding_fee       Decimal @default(0)
-  // sumation fees
-  term_one_fee       Decimal @default(0)
-  term_one_paid      Decimal @default(0)
-  term_one_balance   Decimal @default(0)
-  term_two_fee       Decimal @default(0)
-  term_two_paid      Decimal @default(0)
-  term_two_balance   Decimal @default(0)
-  term_three_fee     Decimal @default(0)
-  term_three_paid    Decimal @default(0)
-  term_three_balance Decimal @default(0)
-  // total year fee
-
-  total_fee       Decimal        @default(0)
-  amount_paid     Decimal        @default(0)
-  balance         Decimal        @default(0)
-  status          String         @default("pending")
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  AdditionalFee   AdditionalFee? @relation(fields: [additionalFeeId], references: [id])
-  additionalFeeId Int?
 }
 
 model FeePayment {
@@ -161,13 +72,10 @@ model FeePayment {
   Class        Class    @relation(fields: [classId], references: [id], onUpdate: Cascade)
   classId      Int
   amount       Decimal
-  Term         Term     @relation(fields: [termId], references: [id], onUpdate: Cascade)
-  termId       Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
-// table with informtion about the school
 model School {
   id           Int      @id @default(autoincrement())
   name         String

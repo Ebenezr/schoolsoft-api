@@ -96,6 +96,7 @@ router.get(
         },
         include: {
           Class: true,
+          // remove this
           StudentTermFee: true,
           AdditionalFeeStudent: true,
         },
