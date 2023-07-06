@@ -96,9 +96,6 @@ router.get(
         },
         include: {
           Class: true,
-          // remove this
-          StudentTermFee: true,
-          AdditionalFeeStudent: true,
         },
         skip: startIndex,
         take: limit,
@@ -177,47 +174,6 @@ router.patch(
     }
   }
 );
-
-// // delete class
-// router.delete(
-//   "/class/:id",
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       const { id } = req.params;
-
-//       const classToDelete = await prisma.class.findUnique({
-//         where: {
-//           id: Number(id),
-//         },
-//         include: {
-//           Teacher: true,
-//         },
-//       });
-
-//       if (!classToDelete) {
-//         return res.status(404).json({ message: "Class not found" });
-//       }
-
-//       const { Teacher } = classToDelete;
-
-//       if (Teacher) {
-//         return res
-//           .status(400)
-//           .json({ message: "Cannot delete a class that has a teacher" });
-//       }
-
-//       await prisma.class.delete({
-//         where: {
-//           id: Number(id),
-//         },
-//       });
-
-//       res.status(204).end();
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
 
 // delete class
 router.delete(

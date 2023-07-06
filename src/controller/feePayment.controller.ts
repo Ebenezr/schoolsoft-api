@@ -12,67 +12,7 @@ router.post(
     try {
       const data = req.body;
       const feePayment = await prisma.feePayment.create({ data });
-
-      const studentTermFee = await prisma.studentTermFee.findFirst({
-        where: {
-          studentId: feePayment.studentId,
-          classId: feePayment.classId,
-        },
-      });
-
-      const term = await prisma.term.findFirst({
-        where: {
-          id: feePayment.termId,
-        },
-      });
-
-      if (studentTermFee && term) {
-        // Define type for updateData
-        type UpdateDataType = {
-          term_one_paid?: {
-            increment: Prisma.Decimal;
-          };
-          term_two_paid?: {
-            increment: Prisma.Decimal;
-          };
-          term_three_paid?: {
-            increment: Prisma.Decimal;
-          };
-          term_one_balance?: {
-            decrement: Prisma.Decimal;
-          };
-          term_two_balance?: {
-            decrement: Prisma.Decimal;
-          };
-          term_three_balance?: {
-            decrement: Prisma.Decimal;
-          };
-        };
-
-        let updateData: UpdateDataType = {};
-
-        if (term.name === 'Term 1') {
-          updateData.term_one_paid = { increment: feePayment.amount };
-          updateData.term_one_balance = { decrement: feePayment.amount };
-        } else if (term.name === 'Term 2') {
-          updateData.term_two_paid = { increment: feePayment.amount };
-          updateData.term_two_balance = { decrement: feePayment.amount };
-        } else if (term.name === 'Term 3') {
-          updateData.term_three_paid = { increment: feePayment.amount };
-          updateData.term_three_balance = { decrement: feePayment.amount };
-        }
-
-        const updatedStudentTermFee = await prisma.studentTermFee.update({
-          where: { id: studentTermFee.id },
-          data: updateData,
-        });
-
-        res.status(201).json({ feePayment, updatedStudentTermFee });
-      } else {
-        res
-          .status(400)
-          .json({ message: 'No term fee found for this student and class.' });
-      }
+      res.status(201).json(feePayment);
     } catch (error) {
       next(error);
     }
@@ -173,49 +113,7 @@ router.patch(
         },
         data,
       });
-
-      // Calculate the difference between the original and updated fee amounts
-      const feeDifference =
-        Number(updatedFeePayment.amount) - Number(originalFeePayment.amount);
-
-      const studentTermFee = await prisma.studentTermFee.findFirst({
-        where: {
-          studentId: updatedFeePayment.studentId,
-          classId: updatedFeePayment.classId,
-        },
-      });
-
-      const term = await prisma.term.findFirst({
-        where: {
-          id: updatedFeePayment.termId,
-        },
-      });
-
-      if (studentTermFee && term) {
-        let updateData: Prisma.StudentTermFeeUpdateInput = {};
-
-        if (term.name === 'Term 1') {
-          updateData.term_one_paid = { increment: feeDifference };
-          updateData.term_one_balance = { decrement: feeDifference };
-        } else if (term.name === 'Term 2') {
-          updateData.term_two_paid = { increment: feeDifference };
-          updateData.term_two_balance = { decrement: feeDifference };
-        } else if (term.name === 'Term 3') {
-          updateData.term_three_paid = { increment: feeDifference };
-          updateData.term_three_balance = { decrement: feeDifference };
-        }
-
-        const updatedStudentTermFee = await prisma.studentTermFee.update({
-          where: { id: studentTermFee.id },
-          data: updateData,
-        });
-
-        res.status(200).json({ updatedFeePayment, updatedStudentTermFee });
-      } else {
-        res
-          .status(400)
-          .json({ message: 'No term fee found for this student and class.' });
-      }
+      res.status(202).json(updatedFeePayment);
     } catch (error) {
       next(error);
     }
@@ -241,48 +139,6 @@ router.delete(
         return res.status(404).json({ message: 'Fee payment not found' });
       }
 
-      // Find the student term fee record
-      const studentTermFee = await prisma.studentTermFee.findFirst({
-        where: {
-          studentId: feePayment.studentId,
-          classId: feePayment.classId,
-        },
-      });
-
-      if (!studentTermFee) {
-        return res
-          .status(404)
-          .json({ message: 'No term fee found for this student and class.' });
-      }
-
-      // Determine which term balance to update
-      let termBalanceField = '';
-      if (feePayment.termId === 1) {
-        termBalanceField = 'term_one_balance';
-      } else if (feePayment.termId === 2) {
-        termBalanceField = 'term_two_balance';
-      } else if (feePayment.termId === 3) {
-        termBalanceField = 'term_three_balance';
-      }
-
-      // Update the student term fee balance
-      const updatedStudentTermFee = await prisma.studentTermFee.update({
-        where: {
-          id: studentTermFee.id,
-        },
-        data: {
-          [termBalanceField]: {
-            increment: Number(feePayment.amount), // Re-add the fee payment to the balance
-          },
-          amount_paid: {
-            decrement: Number(feePayment.amount), // Subtract the fee payment from the amount paid
-          },
-          balance: {
-            increment: Number(feePayment.amount), // Re-add the fee payment to the overall balance
-          },
-        },
-      });
-
       // Delete the fee payment
       const deletedFeePayment = await prisma.feePayment.delete({
         where: {
@@ -290,7 +146,7 @@ router.delete(
         },
       });
 
-      res.status(200).json({ deletedFeePayment, updatedStudentTermFee });
+      res.status(200).json({ deletedFeePayment });
     } catch (error) {
       next(error);
     }

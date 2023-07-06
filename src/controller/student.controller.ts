@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 const router = Router();
 
 // post new student
-// make same as class post action
 router.post(
   '/students/post',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -20,7 +19,6 @@ router.post(
 );
 
 // PATCH existing student
-// make same as class patch action
 router.patch(
   '/student/:id',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -39,8 +37,8 @@ router.patch(
     }
   }
 );
-      
-      // get all students with pagination
+
+// get all students with pagination
 router.get(
   '/students',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -57,9 +55,6 @@ router.get(
         // return student's class name
         include: {
           Class: true,
-          // remove this
-          StudentTermFee: true,
-          AdditionalFeeStudent: true,
         },
         skip: startIndex,
         take: limit,
@@ -170,8 +165,6 @@ router.get(
         },
         include: {
           Class: true,
-          StudentTermFee: true,
-          AdditionalFeeStudent: true,
         },
         skip: startIndex,
         take: limit,

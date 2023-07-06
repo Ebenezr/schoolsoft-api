@@ -78,19 +78,6 @@ router.get(
   }
 );
 
-// number of guardians
-router.get(
-  '/guardians/count',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const totalGuardians = await prisma.guardian.count();
-      res.status(200).json({ totalGuardians });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
 // payment modes
 router.get(
   '/fees/payment-mode',
@@ -160,89 +147,6 @@ router.get(
       res.json({
         todayRevenueByPaymentMode: revenueByPaymentMode,
       });
-    } catch (error: any) {
-      next(error);
-    }
-  }
-);
-
-type Fee = {
-  term: string;
-  amount: number;
-};
-
-type YearlyFee = {
-  year: string;
-  fees: Array<Fee>;
-};
-
-router.get(
-  '/student-fees/total/yearly',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const currentYearStart = new Date(new Date().getFullYear(), 0, 1);
-
-      const yearlyFees: YearlyFee[] = [
-        {
-          year: 'currentYear',
-          fees: [],
-        },
-        {
-          year: 'previousYear',
-          fees: [],
-        },
-      ];
-
-      const terms = ['one', 'two', 'three'];
-
-      for (let year = 0; year < 2; year++) {
-        for (let term = 0; term < terms.length; term++) {
-          const startDate = new Date(currentYearStart.valueOf());
-          startDate.setFullYear(startDate.getFullYear() - year);
-          const endDate = new Date(startDate.valueOf());
-          endDate.setFullYear(endDate.getFullYear() + 1);
-
-          const termPaymentResult = await prisma.studentTermFee.aggregate({
-            where: {
-              createdAt: {
-                gte: startDate,
-                lt: endDate,
-              },
-            },
-            _sum: {
-              [`term_${terms[term]}_paid`]: true,
-            },
-          });
-
-          const termName = `Term ${term + 1}`;
-          const paymentAmount =
-            termPaymentResult._sum &&
-            termPaymentResult._sum[`term_${terms[term]}_paid`] !== null
-              ? new Decimal(
-                  termPaymentResult._sum[`term_${terms[term]}_paid`]
-                ).toNumber()
-              : 0;
-
-          const yearlyFee: Fee = {
-            term: termName,
-            amount: paymentAmount,
-          };
-
-          yearlyFees[year].fees.push(yearlyFee);
-        }
-      }
-
-      const formattedFees: Array<{
-        term: string;
-        current: number;
-        previous: number;
-      }> = yearlyFees[0].fees.map((fee, index) => ({
-        term: fee.term,
-        current: fee.amount,
-        previous: yearlyFees[1].fees[index].amount,
-      }));
-
-      res.json(formattedFees);
     } catch (error: any) {
       next(error);
     }
