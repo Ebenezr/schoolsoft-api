@@ -89,8 +89,3 @@ model School {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
-
-
-// categories of students
-// full amount
-// discounted
