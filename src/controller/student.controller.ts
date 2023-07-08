@@ -10,6 +10,8 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
+      // see fee balance
+      data.feeBalance = data.feeAmount;
       const student = await prisma.student.create({ data });
       res.status(201).json(student);
     } catch (error) {
