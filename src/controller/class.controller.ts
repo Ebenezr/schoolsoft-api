@@ -74,12 +74,14 @@ router.get(
 );
 
 // Endpoint for getting students of a specific class
+
 router.get(
   '/class/:classId/students',
   async (req: Request, res: Response, next: NextFunction) => {
     const classId = parseInt(req.params.classId);
     const page = parseInt(req.query.page as string, 10) || 1;
     const limit = parseInt(req.query.limit as string, 10) || 10;
+    const balance = parseFloat(req.query.balance as string);
 
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
@@ -93,6 +95,9 @@ router.get(
       const students = await prisma.student.findMany({
         where: {
           classId: classId,
+          feeBalance: {
+            gte: balance || 0,
+          },
         },
         include: {
           Class: true,
@@ -104,6 +109,9 @@ router.get(
       const totalStudents = await prisma.student.count({
         where: {
           classId: classId,
+          feeBalance: {
+            gte: balance || 0,
+          },
         },
       });
 
