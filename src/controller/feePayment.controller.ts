@@ -6,96 +6,45 @@ const router = Router();
 
 // post new fee payment
 
-// router.post(
-//   '/fee-payments/post',
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const prismaTransaction = prisma.$transaction;
-//     try {
-//       const { studentId, amount } = req.body;
-
-//       // Retrieve the student
-//       const student = await prisma.student.findUnique({
-//         where: { id: studentId },
-//       });
-//       // Ensure the student exists
-//       if (!student) {
-//         return res.status(404).json({ error: 'Student not found' });
-//       }
-
-//       // Update the student's feePaid and feeBalance
-//       const updatedStudent = prisma.student.update({
-//         where: { id: studentId },
-//         data: {
-//           feePaid: {
-//             increment: amount,
-//           },
-//           feeBalance: {
-//             decrement: amount,
-//           },
-//         },
-//       });
-
-//       // Create the new fee payment
-//       const feePayment = prisma.feePayment.create({ data: req.body });
-
-//       // Execute the transaction
-//       const [_, newFeePayment] = await prismaTransaction([
-//         updatedStudent,
-//         feePayment,
-//       ]);
-
-//       // Respond with the new fee payment
-//       res.status(201).json(newFeePayment);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
 router.post(
   '/fee-payments/post',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { studentId, amount } = req.body;
-      const numericAmount = Number(amount);
 
-      if (isNaN(numericAmount)) {
-        return res.status(400).json({ message: 'Invalid amount' });
+      // Retrieve the student
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+      });
+      // Ensure the student exists
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
       }
 
-      // Start a transaction
-      const result = await prisma.$transaction([
-        // Create a new fee payment
-        prisma.feePayment.create({
-          data: {
-            ...req.body,
-            studentId: studentId,
-            amount: numericAmount,
-          }
-        }),
-        // Update the related student
+      // Execute the transaction
+      const [studentInfo, paymentInfo] = await prisma.$transaction([
+        // Create the new fee payment
+        prisma.feePayment.create({ data: req.body }), // Update the student's feePaid and feeBalance
         prisma.student.update({
           where: { id: studentId },
           data: {
             feePaid: {
-              increment: numericAmount
+              increment: amount,
             },
             feeBalance: {
-              decrement: numericAmount
-            }
-          }
-        })
+              decrement: amount,
+            },
+          },
+        }),
       ]);
 
-      // result[0] is the result of the create operation
-      // result[1] is the result of the update operation
-      res.status(201).json(result[0]);
-
+      // Respond with the new fee payment
+      res.status(201).json(paymentInfo);
     } catch (error) {
       next(error);
     }
   }
 );
-
 
 // get all fee payments
 router.get(
@@ -168,7 +117,6 @@ router.get(
 router.patch(
   '/fee-payments/:id',
   async (req: Request, res: Response, next: NextFunction) => {
-    const prismaTransaction = prisma.$transaction;
     try {
       const { id } = req.params;
       const { studentId, amount } = req.body;
@@ -186,33 +134,28 @@ router.patch(
       const amountDifference =
         Number(amount) - Number(originalFeePayment.amount);
 
-      // Update the student's feePaid and feeBalance
-      const updatedStudent = prisma.student.update({
-        where: { id: studentId },
-        data: {
-          feePaid: {
-            increment: amountDifference,
+      const [studentInfo, paymentInfo] = await prisma.$transaction([
+        // Update the fee payment
+        prisma.feePayment.update({
+          where: { id: Number(id) },
+          data: req.body,
+        }),
+        // Update the student's feePaid and feeBalance
+        prisma.student.update({
+          where: { id: studentId },
+          data: {
+            feePaid: {
+              increment: amountDifference,
+            },
+            feeBalance: {
+              decrement: amountDifference,
+            },
           },
-          feeBalance: {
-            decrement: amountDifference,
-          },
-        },
-      });
-
-      // Update the fee payment
-      const updatedFeePayment = prisma.feePayment.update({
-        where: { id: Number(id) },
-        data: req.body,
-      });
-
-      // Execute the transaction
-      const [_, newFeePayment] = await prismaTransaction([
-        updatedStudent,
-        updatedFeePayment,
+        }),
       ]);
 
       // Respond with the updated fee payment
-      res.status(202).json(newFeePayment);
+      res.status(202).json(paymentInfo);
     } catch (error) {
       next(error);
     }
@@ -224,7 +167,6 @@ router.patch(
 router.delete(
   '/fee-payments/:id',
   async (req: Request, res: Response, next: NextFunction) => {
-    const prismaTransaction = prisma.$transaction;
     try {
       const { id } = req.params;
 
@@ -237,32 +179,27 @@ router.delete(
         return res.status(404).json({ message: 'Fee payment not found' });
       }
 
-      // Update the student's feePaid and feeBalance
-      const updatedStudent = prisma.student.update({
-        where: { id: feePayment.studentId },
-        data: {
-          feePaid: {
-            decrement: feePayment.amount,
-          },
-          feeBalance: {
-            increment: feePayment.amount,
-          },
-        },
-      });
-
-      // Delete the fee payment
-      const deletedFeePayment = prisma.feePayment.delete({
-        where: { id: Number(id) },
-      });
-
       // Execute the transaction
-      const [_, feePaymentDeleted] = await prismaTransaction([
-        updatedStudent,
-        deletedFeePayment,
+      const [studentInfo, paymentInfo] = await prisma.$transaction([
+        // Delete the fee payment
+        prisma.feePayment.delete({
+          where: { id: Number(id) },
+        }), // Update the student's feePaid and feeBalance
+        prisma.student.update({
+          where: { id: feePayment.studentId },
+          data: {
+            feePaid: {
+              decrement: feePayment.amount,
+            },
+            feeBalance: {
+              increment: feePayment.amount,
+            },
+          },
+        }),
       ]);
 
       // Respond with the deleted fee payment
-      res.status(200).json(feePaymentDeleted);
+      res.status(200).json(paymentInfo);
     } catch (error) {
       next(error);
     }
