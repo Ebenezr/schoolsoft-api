@@ -153,4 +153,55 @@ router.get(
   }
 );
 
+// fee payment report per class's
+router.get(
+  '/students/fee-status/:classId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const classId = Number(req.params.classId);
+
+      // Students who have paid full fee
+      const paidStudentsCount = await prisma.student.count({
+        where: {
+          classId: classId,
+          feeBalance: {
+            equals: 0,
+          },
+        },
+      });
+
+      // Students who have not made any payment
+      const unpaidStudentsCount = await prisma.student.count({
+        where: {
+          classId: classId,
+          feePaid: {
+            equals: 0,
+          },
+        },
+      });
+
+      // Students who have made some payment but not fully paid
+      const partialPaidStudentsCount = await prisma.student.count({
+        where: {
+          classId: classId,
+          feePaid: {
+            gt: 0,
+          },
+          feeBalance: {
+            gt: 0,
+          },
+        },
+      });
+
+      res.json([
+        { name: 'paid', value: paidStudentsCount },
+        { name: 'unpaid', value: unpaidStudentsCount },
+        { name: 'partial', value: partialPaidStudentsCount },
+      ]);
+    } catch (error: any) {
+      next(error);
+    }
+  }
+);
+
 export default router;
